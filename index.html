@@ -208,7 +208,11 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   margin-bottom:1.25rem;
   position:relative;
   width:100%;
-  padding-top:75%; /* 4:3 비율 */
+  padding-top:75%;
+  transition:padding-top 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.active-card-wrap.flipped-wrap{
+  padding-top:50%;
 }
 @keyframes scalePop{
   0%  { opacity:0; transform:scale(0.88); }
@@ -330,6 +334,11 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 /* 좌측 하단: 분량 정보 (cloudcash의 Current balance 자리) */
 .active-stats{
   display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+  padding-top:0;
+  transition:padding-top 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.active-stats.pulled-up{
+  padding-top:1.25rem;
 }
 .active-stat-item{
   background:var(--bg);border-radius:12px;padding:10px 14px;
@@ -355,6 +364,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   box-shadow:0 2px 8px rgba(0,0,0,0.05);
   display:flex;flex-direction:column;gap:0;
   flex:1;min-height:0;
+  overflow:hidden;
 }
 .mini-card:hover{
   border-color:var(--border-strong);
@@ -428,7 +438,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .big-tl-track::-webkit-scrollbar{display:none}
 /* 공동연표: 노드 고정 너비로 PC에서 무한 늘어남 방지 */
 #joint-tl-outer{overflow:hidden}
-#joint-tl-track{overflow-x:auto;overflow-y:visible}
+#joint-tl-track{overflow-x:hidden;overflow-y:visible}
 #joint-tl-track .big-tl-node{flex:0 0 72px;min-width:72px}
 /* 선 */
 .big-tl-line{
@@ -851,14 +861,35 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 /* 롤플레이 로그 래퍼 */
 /* ── 카카오톡 스타일 대화 로그 ── */
 .dlg-card{
-  background:var(--bg);
+  background:#F7F8FA;
   border:1px solid var(--border);
   border-radius:var(--r-lg);
   box-shadow:0 2px 12px rgba(0,0,0,0.06);
-  padding:1.25rem;
+  padding:3.75rem 0.5rem 3.75rem 1.875rem;
   font-family:'Ridibatang',Georgia,'Noto Serif KR',serif;
+  overflow:hidden;
 }
-.dlg{display:flex;flex-direction:column;gap:14px}
+.dlg{
+  display:flex;flex-direction:column;gap:22px;
+  max-height:72vh;
+  overflow-y:auto;
+  padding-right:1.375rem;
+  scrollbar-width:thin;
+  scrollbar-color:#D1D5DB transparent;
+}
+.dlg::-webkit-scrollbar{
+  width:3px;
+}
+.dlg::-webkit-scrollbar-track{
+  background:transparent;
+}
+.dlg::-webkit-scrollbar-thumb{
+  background:#D1D5DB;
+  border-radius:10px;
+}
+.dlg::-webkit-scrollbar-thumb:hover{
+  background:#9CA3AF;
+}
 .dt{display:flex;flex-direction:column;gap:0;width:100%}
 .dt.hidden{display:none}
 
@@ -876,11 +907,13 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 /* 프로필 아바타 */
 .msg-avatar{
-  width:32px;height:32px;border-radius:50%;
+  width:48px;height:48px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;flex-shrink:0;
+  font-size:14px;font-weight:700;flex-shrink:0;
   align-self:flex-start;
+  overflow:hidden;padding:0;
 }
+.msg-avatar img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
 .dt.sh .msg-avatar{ background:var(--sh-bg);color:var(--sh) }
 .dt.si .msg-avatar{ background:var(--si-bg);color:var(--si) }
 
@@ -890,7 +923,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 /* 이름 레이블 */
 .msg-name{
-  font-size:11px;font-weight:600;padding:0 2px;
+  font-size:16.5px;font-weight:600;padding:0 2px;
   font-family:'SUITE',-apple-system,sans-serif;
 }
 .dt.sh .msg-name{ color:var(--sh) }
@@ -900,27 +933,82 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .db{
   display:block;
   padding:10px 14px;
-  font-size:13.5px;line-height:1.7;
+  font-size:16px;line-height:1.7;
   border-radius:18px;
   position:relative;
   word-break:keep-all;
   max-width:100%;
   box-sizing:border-box;
   overflow:hidden;
+  color:var(--text);
 }
-/* 정수환: 연한 갈색 배경, 좌하단 꼬리 */
+/* 정수환: 연한 갈색 배경 */
 .dt.sh .db{
-  background:var(--sh-bg);color:var(--sh);
+  background:var(--sh-bg);
   border-radius:4px 18px 18px 18px;
 }
-/* 최시몬: 연한 회색 배경, 우하단 꼬리 */
+/* 최시몬: 연한 회색 배경 */
 .dt.si .db{
-  background:var(--si-bg);color:var(--si);
+  background:var(--si-bg);
   border-radius:18px 4px 18px 18px;
 }
-/* 더미 텍스트 라인 — 고정 width는 HTML에 있으나 max-width:100%로 제한 */
+/* 더미 텍스트 라인 */
 .pht{height:11px;background:currentColor;opacity:0.18;border-radius:4px;margin-bottom:5px;max-width:100%}
 .pht:last-child{margin-bottom:0}
+/* 메인카드 파티클 반짝 */
+@keyframes sp-blink{
+  0%,100%{opacity:0;transform:scale(0.4)}
+  50%{opacity:1;transform:scale(1)}
+}
+/* 전역 파티클 반짝이 */
+.sparkle-host{position:relative;overflow:hidden}
+.sparkle-host .sp-global{
+  position:absolute;border-radius:50%;
+  background:#fff;opacity:0;pointer-events:none;
+  animation:sp-blink var(--sp-dur,2s) ease-in-out var(--sp-delay,0s) infinite;
+  box-shadow:0 0 4px rgba(255,255,255,0.9);
+  z-index:20;
+}
+@keyframes card-breathe{
+  0%,100%{box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+  50%{box-shadow:0 4px 18px rgba(0,0,0,0.13),0 0 0 2px var(--border-strong)}
+}
+.card-breathe{
+  animation:card-breathe 2s ease-in-out infinite;
+}
+/* 갤러리 빗방울 */
+@keyframes rain-fall{
+  0%{transform:translateY(-10%);opacity:0}
+  10%{opacity:0.7}
+  90%{opacity:0.4}
+  100%{transform:translateY(110%);opacity:0}
+}
+/* 지문 스타일 — 회색 (진하게, 크기 업) */
+.db .sl{
+  color:#6B7280;
+  font-size:0.97em;
+}
+/* 말풍선 클릭 복사 */
+.db{cursor:pointer;transition:filter 0.12s}
+.db:active{filter:brightness(0.95)}
+/* 복사 팝업 */
+.copy-toast{
+  position:fixed;
+  background:#ffffff;
+  color:#E82167;
+  border:1.5px solid #E82167;
+  box-shadow:0 2px 8px rgba(232,33,103,0.12);
+  padding:5px 12px;
+  border-radius:20px;
+  font-size:12px;
+  font-family:'SUITE',sans-serif;
+  font-weight:500;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.15s;
+  z-index:9999;
+  white-space:nowrap;
+}
 
 /* ── 앨범 포스트 / 프로필 갤러리 공통 ── */
 .album-post-main, .profile-gallery-main{
@@ -1187,9 +1275,22 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     width:100%;
   }
   .active-card-wrap{
-    padding-top:75%; /* 4:3 모바일도 동일 */
+    padding-top:75%;
+    margin-bottom:0;
   }
-  .active-stats{display:none}
+  .active-card-wrap.flipped-wrap{
+    padding-top:50%;
+  }
+  .active-stats{
+    display:grid !important;
+    padding-top:0 !important;
+    margin-top:8px;
+    transition:none;
+  }
+  .active-stats.pulled-up{
+    padding-top:0 !important;
+    margin-top:8px;
+  }
 
   /* 갤러리: order 1 → 카드 바로 아래 */
   .home-gallery-section{
@@ -1204,10 +1305,12 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     display:flex !important;
     flex-direction:row !important;
     overflow-x:auto;
+    overflow-y:visible;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     gap:8px;
     width:100%;
+    padding:4px 2px;
   }
   .mini-cards-section::-webkit-scrollbar{display:none}
   .mini-cards-grid{
@@ -1216,6 +1319,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     gap:8px;
     flex-wrap:nowrap;
     width:100%;
+    padding:4px 2px;
   }
   .mini-cards-grid{width:100%}
   .mini-card{
@@ -1312,7 +1416,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     max-width:88%;
   }
   .dt.si .msg-body{ align-items:flex-end }
-  .msg-avatar{ width:26px;height:26px;font-size:10px }
+  .msg-avatar{ width:38px;height:38px;font-size:11px }
   .db{ font-size:12.5px;padding:8px 12px }
 }
 
@@ -1377,7 +1481,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 </style>
 </head>
 <body>
-
+<div class="copy-toast" id="copy-toast">copy♥</div>
 <div class="shell">
 <div class="shell-card">
 
@@ -1459,12 +1563,14 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
         <div id="home-gallery-slide" style="position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 0.6s ease">
           <div style="font-size:12px;color:var(--text-faint)">사진 없음</div>
         </div>
-        <!-- 프로그레스바 — 우상단, 컴포넌트 가로의 1/4 -->
-        <div style="position:absolute;top:10px;right:10px;width:25%;height:4px;background:rgba(255,255,255,0.3);border-radius:99px;overflow:hidden">
+        <!-- 빗방울 오버레이 -->
+        <div id="gallery-rain" style="position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden;border-radius:16px"></div>
+        <!-- 프로그레스바 -->
+        <div style="position:absolute;top:10px;right:10px;width:25%;height:4px;background:rgba(255,255,255,0.3);border-radius:99px;overflow:hidden;z-index:5">
           <div id="home-gallery-progress" style="height:100%;width:0%;background:rgba(255,255,255,0.95);border-radius:99px;transition:none"></div>
         </div>
-        <!-- 캐러셀 점 — 하단 가운데 -->
-        <div id="home-gallery-dots" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center"></div>
+        <!-- 캐러셀 점 -->
+        <div id="home-gallery-dots" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;z-index:5"></div>
       </div>
     </div>
 
@@ -1568,54 +1674,66 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     <div class="reader-wrap">
       <!-- 서사요약 -->
       <div class="read-card ep-read-summary-box" id="ep-read-summary-box">
-        <div class="ep-read-summary-lbl">이 장면은</div>
+        <div class="ep-read-summary-lbl">이 장면은..</div>
         <div class="ep-read-summary-text" id="ep-read-summary-text"></div>
       </div>
       <!-- 검색 -->
-      <div class="read-card no-shadow read-search-box">
+      <div class="read-card no-shadow read-search-box" style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;color:var(--text-soft)">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M10 10L13 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
         <input class="search-input" type="text" id="ep-read-search"
-          placeholder="대화·장면 검색" oninput="filterReadLines(this.value)"
+          placeholder="대화·장면 검색 후 엔터" onkeydown="if(event.key==='Enter')filterReadLines(this.value)"
           style="border:none;box-shadow:none;padding:0;font-size:13px;background:transparent;width:100%">
+        <button id="ep-read-search-clear" onclick="clearReadSearch()" style="
+          display:none;flex-shrink:0;
+          height:24px;padding:0 10px;
+          background:#FFE5FA;border:1px solid #F8BBD0;border-radius:20px;
+          color:#E82167;font-size:11px;font-weight:600;
+          cursor:pointer;font-family:'SUITE',sans-serif;
+          white-space:nowrap;
+        ">전체 보기</button>
       </div>
       <!-- 롤플레이 로그 -->
-      <div class="dlg-card">
+      <div class="dlg-card" style="position:relative">
+        <!-- 글자 크기 조절 — dlg-card 우상단 고정 -->
+        <div style="
+          position:absolute;top:1rem;right:1rem;z-index:10;
+          display:flex;align-items:center;
+          font-family:'SUITE',sans-serif;
+          background:#ffffff;
+          border:1px solid var(--border);
+          border-radius:10px;
+          overflow:hidden;
+          box-shadow:0 1px 4px rgba(0,0,0,0.06);
+        ">
+          <button onclick="adjustDlgFontSize(0)" title="원본 크기로" style="
+            height:28px;padding:0 10px;
+            background:transparent;border:none;border-right:1px solid var(--border);
+            color:var(--text-mute);font-size:12px;font-weight:600;
+            cursor:pointer;line-height:1;transition:color 0.15s;font-family:'SUITE',sans-serif;
+          " onmouseover="this.style.color='var(--text)'"
+             onmouseout="this.style.color='var(--text-mute)'">가</button>
+          <button onclick="adjustDlgFontSize(-1)" style="
+            height:28px;width:28px;
+            background:transparent;border:none;border-right:1px solid var(--border);
+            color:var(--text-mute);font-size:14px;font-weight:400;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:color 0.15s;
+          " onmouseover="this.style.color='var(--text)'"
+             onmouseout="this.style.color='var(--text-mute)'">−</button>
+          <button onclick="adjustDlgFontSize(1)" style="
+            height:28px;width:28px;
+            background:transparent;border:none;
+            color:var(--text-mute);font-size:14px;font-weight:400;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:color 0.15s;
+          " onmouseover="this.style.color='var(--text)'"
+             onmouseout="this.style.color='var(--text-mute)'">+</button>
+        </div>
         <div class="dlg" id="ep-read-dlg">
-          <div class="dt sh">
-            <div class="msg-row">
-              <div class="msg-avatar">수</div>
-              <div class="msg-body">
-                <div class="msg-name">정수환</div>
-                <div class="db"><div class="pht" style="width:200px"></div><div class="pht" style="width:160px"></div><div class="pht" style="width:180px"></div></div>
-              </div>
-            </div>
-          </div>
-          <div class="dt si">
-            <div class="msg-row">
-              <div class="msg-avatar">시</div>
-              <div class="msg-body">
-                <div class="msg-name">최시몬</div>
-                <div class="db"><div class="pht" style="width:180px"></div><div class="pht" style="width:140px"></div></div>
-              </div>
-            </div>
-          </div>
-          <div class="dt sh">
-            <div class="msg-row">
-              <div class="msg-avatar">수</div>
-              <div class="msg-body">
-                <div class="msg-name">정수환</div>
-                <div class="db"><div class="pht" style="width:160px"></div><div class="pht" style="width:200px"></div><div class="pht" style="width:120px"></div></div>
-              </div>
-            </div>
-          </div>
-          <div class="dt si">
-            <div class="msg-row">
-              <div class="msg-avatar">시</div>
-              <div class="msg-body">
-                <div class="msg-name">최시몬</div>
-                <div class="db"><div class="pht" style="width:190px"></div><div class="pht" style="width:150px"></div><div class="pht" style="width:170px"></div></div>
-              </div>
-            </div>
-          </div>
+          <div style="padding:2rem;text-align:center;color:var(--text-faint);font-size:13px">에피소드를 선택하면 대화가 표시됩니다.</div>
         </div>
       </div>
       <!-- 이전글 / 목록 / 다음글 네비게이터 -->
@@ -1790,21 +1908,32 @@ const ERAS = [
 
 const EPS = [
   { id:0, title:'오후의 책갈피와 성경책', grade:'1학년', g:'g1', size:'3,005자',  tags:['sh','si'], thumb:'tl-bg',
-    summary:'해람초·해람중. 9년을 지나 처음으로 같은 반. 수환의 책갈피가 떨어지며 시작된 첫 대화는 몇번의 탐색 끝에 "더 알고 싶다"는 말이 착지했다.' },
+    summary:'해람초·해람중. 9년을 지나 처음으로 같은 반. 수환의 책갈피가 떨어지며 시작된 첫 대화는 몇번의 탐색 끝에 "더 알고 싶다"는 말이 착지했다.',
+    mdFiles:['dialogue_log_1학년_첫만남.md','dialogue_log-성경.md'] },
   { id:1, title:'체육대회',             grade:'1학년', g:'g1', size:'1,683자',  tags:['sh','si'], thumb:'tl-bg',
-    summary:'시몬의 공이 수환의 머리에 맞았다. 수환은 똑같이 돌려줬다. 1반이 1등을 하며 터지는 함성, 잡힌 옷자락이 신경 쓰인다.' },
+    summary:'시몬의 공이 수환의 머리에 맞았다. 수환은 똑같이 돌려줬다. 1반이 1등을 하며 터지는 함성, 잡힌 옷자락이 신경 쓰인다.',
+    mdFiles:['dialogue_log_체육대회.md'] },
   { id:2, title:'땡땡이와 오락실',       grade:'2학년', g:'g2', size:'12,932자', tags:['sh','si'], thumb:'ts-bg',
-    summary:'없는 단추를 핑계로 수환의 주머니를 뒤진 시몬. 〈열받게 하는 사람을 이기는 법〉, 땡땡이, 하우스 오브 더 데드, 오토바이 핸들 위의 손 — 먼저 손을 가져간 쪽은 수환이었다.' },
+    summary:'없는 단추를 핑계로 수환의 주머니를 뒤진 시몬. 〈열받게 하는 사람을 이기는 법〉, 땡땡이, 하우스 오브 더 데드, 오토바이 핸들 위의 손 — 먼저 손을 가져간 쪽은 수환이었다.',
+    mdFiles:['dialogue_log_2학년여름_단추.md'] },
   { id:3, title:'스카치테이프',          grade:'2학년', g:'g2', size:'27,365자', tags:['sh','si'], thumb:'tm-bg',
-    summary:'아무도 없는 자신의 집에 초대한 수환. 수환이 김밥을 말았다. 어머니가 불쑥 왔다가 웃으며 돌아갔다. 첫번째 다툼. 트럼프카드의 무수한 배열과 같이 새로운 역사를 쓴 하루. 수환이 처음으로 "시몬아"라고 불렀다.' },
+    summary:'아무도 없는 자신의 집에 초대한 수환. 수환이 김밥을 말았다. 어머니가 불쑥 왔다가 웃으며 돌아갔다. 첫번째 다툼. 트럼프카드의 무수한 배열과 같이 새로운 역사를 쓴 하루. 수환이 처음으로 "시몬아"라고 불렀다.',
+    mdFiles:['dialogue_log_2학년_손목묶기.md'] },
   { id:4, title:'제주도 수학여행',       grade:'2학년', g:'g2', size:'33,996자', tags:['sh','si'], thumb:'tl-bg',
-    summary:'같은 체크 남방, 승마 공원, 느린 우체통, 말 인형 열쇠고리와 나무 책갈피. 식어가는 컵라면을 둔 채 처음으로 서로의 속마음을 꺼낸다. 반쪽짜리 신화의 의미. 어두운 불빛 아래 처음으로 솔직해진 밤.' },
+    summary:'같은 체크 남방, 승마 공원, 느린 우체통, 말 인형 열쇠고리와 나무 책갈피. 식어가는 컵라면을 둔 채 처음으로 서로의 속마음을 꺼낸다. 반쪽짜리 신화의 의미. 어두운 불빛 아래 처음으로 솔직해진 밤.',
+    mdFiles:['dialogue_log_2학년_제주수학여행.md'] },
   { id:5, title:'수학여행 에필로그',     grade:'2학년', g:'g2', size:'4,819자',  tags:['sh','si'], thumb:'ts-bg',
-    summary:'교실로 돌아왔다. 달라진 것과 달라지지 않은 것을 각자 정리하는 시간.' },
+    summary:'교실로 돌아왔다. 달라진 것과 달라지지 않은 것을 각자 정리하는 시간.',
+    mdFiles:['dialogue_log_2학년_수학여행이후.md'] },
   { id:6, title:'첫눈과 빨간노끈',      grade:'3학년', g:'g3', size:'17,152자', tags:['sh','si'], thumb:'ts-bg',
-    summary:'동아리실 빨간 노끈, 첫눈, 처음으로 안은 날. 졸업식 복도에서 마주친 눈빛. 끝이 다가온다는 걸 둘 다 알았다.' },
+    summary:'동아리실 빨간 노끈, 첫눈, 처음으로 안은 날. 졸업식 복도에서 마주친 눈빛. 끝이 다가온다는 걸 둘 다 알았다.',
+    mdFiles:['dialogue_log_3학년_졸업식전.md'] },
   { id:7, title:'마지막 싸움과 화해',   grade:'3학년', g:'g3', size:'51,885자', tags:['sh','si'], thumb:'tl-bg',
-    summary:'소주 8병을 앞에 둔 채 당돌한 고백으로 인해 모든 게 어질러진다. 반쪽짜리 신화의 의미.' },
+    summary:'소주 8병을 앞에 둔 채 당돌한 고백으로 인해 모든 게 어질러진다. 반쪽짜리 신화의 의미.',
+    mdFiles:['dialogue_log_3학년_졸업식전2_고백.md'] },
+  { id:8, title:'흰 장미 꽃다발',       grade:'3학년', g:'g3', size:'—',        tags:['sh','si'], thumb:'ts-bg',
+    summary:'졸업 후, 서울로 떠나기 전날. 마지막 밤의 온도.',
+    mdFiles:['dialogue_log_졸업후_서울가기전날.md'] },
 ];
 
 const ALBUM_DATA = {
@@ -1891,11 +2020,13 @@ let activeEraId = 'y1';
 let activeBackChar = 'sh'; // 뒷면 표시 캐릭터
 
 function buildActiveCardFront(era) {
-  // 앞면: 이미지 뷰 — 학년 배지(좌) + 카드뒤집기(우) + 큰 이미지 영역
   const badgeLabels = { y1:'1학년', y2:'2학년', y3:'3학년', adult:'성인 프로필' };
+  const imgUrl = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' }[era.id];
+  const imgHtml = imgUrl
+    ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;position:absolute;inset:0">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-faint)">이미지</div>`;
   return `
-    <div class="active-card-face" style="background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.07);padding:0;display:flex;flex-direction:column">
-      <!-- 상단: 학년 배지(좌) + 카드뒤집기(우) -->
+    <div class="active-card-face" id="card-front-face" style="background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.07);padding:0;display:flex;flex-direction:column">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;flex-shrink:0">
         <span class="mini-card-badge theme-${era.id}">${badgeLabels[era.id]}</span>
         <div class="ac-flip-hint" onclick="event.stopPropagation();flipActiveCard()">
@@ -1903,9 +2034,17 @@ function buildActiveCardFront(era) {
           카드뒤집기 ✦
         </div>
       </div>
-      <!-- 큰 이미지 영역 — 하단까지 꽉 채움 -->
-      <div style="flex:1;margin:10px 14px 14px;border-radius:14px;background:var(--bg);overflow:hidden;position:relative">
-        ${era.id === 'y3' ? `<img src="https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png" style="width:100%;height:100%;object-fit:cover;object-position:20% center;display:block">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-faint)">이미지</div>`}
+      <div style="flex:1;margin:10px 14px 14px;border-radius:14px;background:var(--bg);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center" id="card-img-area">
+        ${imgHtml}
+        <!-- 파티클 반짝 -->
+        <div id="card-sparkles" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>
+        <!-- 홀로그램 틸트 글레어 -->
+        <div id="card-glare" style="position:absolute;inset:0;border-radius:14px;pointer-events:none;z-index:4;opacity:0;transition:opacity 0.2s"></div>
+        <!-- 페이드 오버레이 -->
+        <div style="position:absolute;inset:0;pointer-events:none;z-index:5;background:
+          linear-gradient(to bottom, rgba(238,240,243,0.35) 0%, transparent 18%, transparent 82%, rgba(238,240,243,0.35) 100%),
+          linear-gradient(to right,  rgba(238,240,243,0.25) 0%, transparent 16%, transparent 84%, rgba(238,240,243,0.25) 100%);
+          border-radius:14px"></div>
       </div>
     </div>`;
 }
@@ -2013,17 +2152,33 @@ function renderActiveCard(animate) {
       wrap.classList.add('pop');
     }
   }
+  // 파티클 + 틸트 효과 초기화
+  requestAnimationFrame(initCardEffects);
 }
 
+let _isFlipping = false;
+
 function flipActiveCard() {
+  if (_isFlipping) return;
   const card = document.getElementById('active-card');
+  const wrap = card.closest('.active-card-wrap');
   const isFlipping = !card.classList.contains('flipped');
+
+  _isFlipping = true;
+  card.style.transform = '';
+  const stats = document.getElementById('active-stats');
+
   if (isFlipping) {
     card.classList.add('flipped');
+    if (wrap) wrap.classList.add('flipped-wrap');
+    if (stats) stats.classList.add('pulled-up');
     setTimeout(checkBackChipsVisibility, 750);
   } else {
     card.classList.remove('flipped');
+    if (wrap) wrap.classList.remove('flipped-wrap');
+    if (stats) stats.classList.remove('pulled-up');
   }
+  setTimeout(() => { _isFlipping = false; }, 750);
 }
 
 // 카드 높이가 충분하지 않으면 칩스 박스 숨김
@@ -2053,14 +2208,21 @@ function checkBackChipsVisibility() {
 
 function buildMiniCards() {
   const grid = document.getElementById('mini-cards-grid');
-  // 선택된 학년 제외, 나머지 3개만 표시
+  const CARD_IMGS = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
   const others = ERAS.filter(e => e.id !== activeEraId);
-  grid.innerHTML = others.map(era => `
-    <div class="mini-card" onclick="swapActiveEra('${era.id}')">
-      <div class="mini-card-badge theme-${era.id}">${era.label}</div>
-      <div class="mini-card-img">이미지</div>
-    </div>
-  `).join('');
+  grid.innerHTML = others.map(era => {
+    const imgUrl = CARD_IMGS[era.id];
+    const imgHtml = imgUrl
+      ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;border-radius:10px">`
+      : '이미지';
+    return `
+      <div class="mini-card card-breathe" onclick="swapActiveEra('${era.id}')" style="animation-delay:${(Math.random()).toFixed(2)}s">
+        <div class="mini-card-badge theme-${era.id}">${era.label}</div>
+        <div class="mini-card-img" style="${imgUrl ? 'padding:0;overflow:hidden' : ''}">${imgHtml}</div>
+      </div>`;
+  }).join('');
+  // 미니카드 파티클 주입
+  grid.querySelectorAll('.mini-card').forEach(mc => injectSparkles(mc, 8));
 }
 
 function buildActiveStats() {
@@ -2293,6 +2455,114 @@ function buildMiniTL(nodes) {
 
 
 // ════════════════════════════
+// md 파싱 유틸
+// ════════════════════════════
+const MD_BASE = 'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/episodes/';
+
+// md 텍스트 → dt HTML 블록 배열 반환
+const PROFILE_IMGS = {
+  sh: {
+    y1:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-sh-profile.png',
+    y2:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/2y-sh-profile.png',
+    y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-sh-profile.png',
+    adult:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/ad-sh-profile.png',
+  },
+  si: {
+    y1:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-si-profile.png',
+    y2:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/2y-si-profile.png',
+    y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-si-profile.png',
+    adult:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/ad-si-profile.png',
+  },
+};
+const GRADE_TO_ERA = {'1학년':'y1','2학년':'y2','3학년':'y3'};
+
+function parseMdToBlocks(mdText, ep) {
+  const era = GRADE_TO_ERA[ep?.grade] || 'y1';
+  const lines = mdText.split('\n');
+  const blocks = [];
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    // **[정수환]:** 또는 **[최시몬]:** 패턴
+    const m = line.match(/^\*\*\[(정수환|최시몬)\]:\*\*\s*(.*)/);
+    if (!m) continue;
+    const isSh = m[1] === '정수환';
+    const cls  = isSh ? 'sh' : 'si';
+    const name = isSh ? '정수환' : '최시몬';
+    const charKey = isSh ? 'sh' : 'si';
+    const fallback = isSh ? '수' : '시';
+    const imgUrl = PROFILE_IMGS[charKey][era];
+    const avatarInner = imgUrl
+      ? `<img src="${imgUrl}" alt="${name}">`
+      : fallback;
+    const content = m[2].trim();
+    const dbInner = content.replace(/\(([^)]*)\)/g, '<em class="sl">($1)</em>');
+    // 복사용 순수 텍스트 (지문 포함, HTML 제거)
+    const plainText = content.replace(/\(([^)]*)\)/g, '($1)');
+
+    blocks.push(`
+      <div class="dt ${cls}">
+        <div class="msg-row">
+          <div class="msg-avatar">${avatarInner}</div>
+          <div class="msg-body">
+            <div class="msg-name">${name}</div>
+            <div class="db" onclick="copyBubble(this, event)" data-plain="${plainText.replace(/"/g,'&quot;')}">${dbInner}</div>
+          </div>
+        </div>
+      </div>`);
+  }
+  return blocks;
+}
+
+// 상황전환 구분선 HTML
+const SCENE_DIVIDER = (label) => `
+  <div style="display:flex;justify-content:center;padding:6px 0">
+    <div style="
+      background:rgba(255,255,255,0.72);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:6px 20px;
+      font-size:12px;
+      color:var(--text-soft);
+      font-family:'SUITE',sans-serif;
+      letter-spacing:0.04em;
+    ">${label}</div>
+  </div>`;
+
+async function loadEpDialogue(ep) {
+  const dlg = document.getElementById('ep-read-dlg');
+  dlg.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-faint);font-size:13px">불러오는 중…</div>';
+  try {
+    const files = ep.mdFiles || [];
+    const texts = await Promise.all(
+      files.map(f => fetch(MD_BASE + encodeURIComponent(f)).then(r => {
+        if (!r.ok) throw new Error(f + ' 로드 실패');
+        return r.text();
+      }))
+    );
+    // 파일이 여러 개일 때: 첫 파일 이후마다 구분선 삽입 (ep0: "다른 날")
+    const DIVIDER_LABELS = ep.fileDividers || [];
+    const allBlocks = [];
+    texts.forEach((t, i) => {
+      allBlocks.push(...parseMdToBlocks(t, ep));
+      if (i < texts.length - 1) {
+        const label = DIVIDER_LABELS[i] || '다른 날';
+        allBlocks.push(SCENE_DIVIDER(label));
+      }
+    });
+    dlg.innerHTML = allBlocks.length
+      ? allBlocks.join('')
+      : '<div style="padding:2rem;text-align:center;color:var(--text-faint);font-size:13px">대화 내용이 없습니다.</div>';
+    // 현재 글자 크기 유지 적용
+    if (_dlgFontSize !== DLG_FONT_DEFAULT) {
+      dlg.querySelectorAll('.db').forEach(el => { el.style.fontSize = _dlgFontSize + 'px'; });
+    }
+  } catch(e) {
+    dlg.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-faint);font-size:13px">대화를 불러오지 못했습니다.<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ════════════════════════════
 // 열람 — 항상 에피소드 탭 내부
 // ════════════════════════════
 let readFrom = 'home';
@@ -2308,8 +2578,8 @@ function openRead(epId, from) {
   // 검색 초기화
   const srch = document.getElementById('ep-read-search');
   if (srch) srch.value = '';
-  // 대화 목록 초기화 (hidden 해제)
-  document.querySelectorAll('#ep-read-dlg .dt').forEach(d => d.classList.remove('hidden'));
+  // 대화 동적 로딩
+  loadEpDialogue(ep);
 
   // ── 이전글 / 다음글 네비게이터 ──
   const prevEp = epId > 0 ? EPS[epId - 1] : null;
@@ -2344,11 +2614,41 @@ function openRead(epId, from) {
 }
 
 function filterReadLines(q) {
+  const clearBtn = document.getElementById('ep-read-search-clear');
   document.querySelectorAll('#ep-read-dlg .dt').forEach(dt => {
-    if (!q.trim()) { dt.classList.remove('hidden'); return; }
-    const txt = dt.querySelector('.sl')?.textContent + dt.querySelector('.db')?.textContent;
-    dt.classList.toggle('hidden', !txt.includes(q));
+    const dbEl = dt.querySelector('.db');
+    if (!dbEl) return;
+    if (!q.trim()) {
+      dt.classList.remove('hidden');
+      if (dbEl.dataset.originalHtml) {
+        dbEl.innerHTML = dbEl.dataset.originalHtml;
+        delete dbEl.dataset.originalHtml;
+      }
+      return;
+    }
+    const txt = dbEl.textContent || '';
+    const matches = txt.includes(q);
+    dt.classList.toggle('hidden', !matches);
+    if (matches) {
+      if (!dbEl.dataset.originalHtml) dbEl.dataset.originalHtml = dbEl.innerHTML;
+      dbEl.innerHTML = dbEl.dataset.originalHtml.replace(
+        new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'),
+        `<mark style="background:#FFE5FA;color:#E82167;border-radius:3px;padding:0 1px">$&</mark>`
+      );
+    } else {
+      if (dbEl.dataset.originalHtml) {
+        dbEl.innerHTML = dbEl.dataset.originalHtml;
+        delete dbEl.dataset.originalHtml;
+      }
+    }
   });
+  if (clearBtn) clearBtn.style.display = q.trim() ? 'block' : 'none';
+}
+
+function clearReadSearch() {
+  const input = document.getElementById('ep-read-search');
+  if (input) input.value = '';
+  filterReadLines('');
 }
 
 function closeEpRead() {
@@ -2459,6 +2759,40 @@ function warpToProfile(targetEra) {
 }
 
 // ════════════════════════════
+// ── 프로필 전신이미지 토글 ──
+const FULLBODY_IMGS = {
+  sh: {
+    y1: 'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-sh-fulb.png',
+  },
+  si: {
+    y1: 'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-si-fulb.png',
+  },
+};
+
+function toggleFullBody(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const arrowId = id.replace('fullbody-', 'fullbody-arrow-');
+  const arrow = document.getElementById(arrowId);
+  const isOpen = el.style.maxHeight && el.style.maxHeight !== '0px';
+  // id 형식: fullbody-{charKey}-{era}
+  const parts = id.split('-');
+  const charKey = parts[1];
+  const era = parts[2];
+  // 이미지 src 지연 설정
+  const img = document.getElementById(`fullbody-img-${charKey}-${era}`);
+  if (img && !img.src && FULLBODY_IMGS[charKey]?.[era]) {
+    img.src = FULLBODY_IMGS[charKey][era];
+  }
+  if (isOpen) {
+    el.style.maxHeight = '0px';
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+  } else {
+    el.style.maxHeight = '2000px';
+    if (arrow) arrow.style.transform = 'rotate(180deg)';
+  }
+}
+
 // 프로필 학년별 콘텐츠 업데이트 — 열 기반
 // ════════════════════════════
 const PROFILE_FULL_DATA = {
@@ -2552,6 +2886,43 @@ function buildCharColumn(charKey, era) {
         <h2>${cd.name}</h2>
         <div class="en">${cd.en}</div>
         <div class="p-meta">${ed.metaTags.map(t=>`<span class="mc">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+    <!-- 전신 이미지 토글 -->
+    <div onclick="toggleFullBody('fullbody-${charKey}-${era}')" style="
+      display:flex;align-items:center;justify-content:center;
+      padding:6px 0 2px;cursor:pointer;gap:4px;
+      color:var(--text-faint);font-size:11px;font-family:'SUITE',sans-serif;
+      transition:color 0.15s;
+    " onmouseover="this.style.color='var(--text-soft)'" onmouseout="this.style.color='var(--text-faint)'">
+      <svg id="fullbody-arrow-${charKey}-${era}" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform 0.3s">
+        <path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <!-- 전신 이미지 영역 -->
+    <div id="fullbody-${charKey}-${era}" style="
+      max-height:0;overflow:hidden;
+      transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+    ">
+      <div style="
+        margin:6px 0 4px;
+        background:#ffffff;
+        border:1px solid var(--border);
+        border-radius:12px;
+        overflow:hidden;
+        display:flex;justify-content:center;align-items:flex-start;
+        max-width:100%;
+        box-sizing:border-box;
+      ">
+        <img id="fullbody-img-${charKey}-${era}"
+          src=""
+          alt="${cd.name} 전신"
+          style="width:100%;max-width:100%;height:auto;max-height:100%;display:block;object-fit:contain;box-sizing:border-box"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        >
+        <div style="display:none;width:100%;min-height:320px;align-items:center;justify-content:center;font-size:12px;color:var(--text-faint);padding:2rem">
+          이미지 준비 중
+        </div>
       </div>
     </div>
     <!-- 기본 정보 -->
@@ -2794,7 +3165,6 @@ const PROFILE_GALLERY = {
     {c:'#F5EFE8',lbl:'2학년 — 창포동 김밥 / 앞치마'},
     {c:'#EFEFEF',lbl:'2학년 — 제주 승마 공원 / 당근'},
     {c:'#F0E8DF',lbl:'3학년 — 동아리실 / 빨간 노끈'},
-    {c:'#EEF4FB',lbl:'졸업 후 — 서울 ㅇㅇ구 / 대전행 전'},
   ],
   si: [
     {c:'#E8E8E8',lbl:'1학년 — 앞자리 / 초콜릿폰'},
@@ -2802,7 +3172,6 @@ const PROFILE_GALLERY = {
     {c:'#F5EFE8',lbl:'2학년 — 제주 수학여행 / 초록 남방'},
     {c:'#EFEFEF',lbl:'2학년 — 제주 말 공원 / 수환 몰래 촬영'},
     {c:'#E8E8E8',lbl:'3학년 — 소주 8병 / 하나님 책상'},
-    {c:'#EEF4FB',lbl:'졸업 후 — 서울 자취방 / 말 열쇠고리'},
   ],
 };
 const profileGalleryIdx = { unified: 0 };
@@ -2979,6 +3348,24 @@ function initHomeGallery() {
   homeGalleryOrder = buildHomeGalleryOrder();
   homeGalleryPos = 0;
   showHomeGallerySlide();
+  // 빗방울 생성
+  const rain = document.getElementById('gallery-rain');
+  if (rain) {
+    rain.innerHTML = '';
+    for (let i = 0; i < 35; i++) {
+      const d = document.createElement('div');
+      const h = 12 + Math.random() * 28;
+      d.style.cssText = `
+        position:absolute;
+        width:1.5px;height:${h}px;
+        left:${Math.random()*100}%;
+        border-radius:2px;
+        background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.65));
+        animation:rain-fall ${0.55+Math.random()*0.7}s linear ${Math.random()*2.5}s infinite;
+      `;
+      rain.appendChild(d);
+    }
+  }
 }
 
 // ════════════════════════════
@@ -3177,6 +3564,138 @@ window.addEventListener('resize', () => {
   const card = document.getElementById('active-card');
   if (card && card.classList.contains('flipped')) checkBackChipsVisibility();
 });
+
+// ── 공통 파티클 반짝이 주입 ──
+function injectSparkles(el, count) {
+  if (!el) return;
+  el.classList.add('sparkle-host');
+  for (let i = 0; i < count; i++) {
+    const sp = document.createElement('div');
+    const sz = 1.5 + Math.random() * 3;
+    sp.className = 'sp-global';
+    sp.style.cssText = `
+      width:${sz}px;height:${sz}px;
+      left:${3+Math.random()*92}%;top:${3+Math.random()*92}%;
+      --sp-dur:${1.6+Math.random()*2.2}s;
+      --sp-delay:${Math.random()*3}s;
+    `;
+    el.appendChild(sp);
+  }
+}
+
+// ── 메인카드 파티클 + 틸트 효과 ──
+let _cardTiltCleanup = null;
+
+function initCardEffects() {
+  // 이전 이벤트 정리
+  if (_cardTiltCleanup) { _cardTiltCleanup(); _cardTiltCleanup = null; }
+
+  const imgArea = document.getElementById('card-img-area');
+  const glare   = document.getElementById('card-glare');
+  const spWrap  = document.getElementById('card-sparkles');
+  const card    = document.getElementById('active-card');
+  if (!imgArea || !glare || !spWrap || !card) return;
+
+  // ── 파티클 (앞면 이미지 영역) ──
+  injectSparkles(spWrap, 22);
+
+  // ── 뒷면 파티클 ──
+  const backFace = card.querySelector('.active-card-back');
+  if (backFace) injectSparkles(backFace, 14);
+
+  // ── 틸트 (플립 중엔 비활성) ──
+  const onMove = (e) => {
+    if (_isFlipping || card.classList.contains('flipped')) return;
+    const face = document.getElementById('card-front-face');
+    if (face) face.style.animationPlayState = 'paused';
+    const r = imgArea.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width;
+    const ny = (e.clientY - r.top)  / r.height;
+    const rx = (ny - 0.5) * -12;
+    const ry = (nx - 0.5) *  12;
+    card.style.transform = `perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    const px = Math.round(nx * 100);
+    const py = Math.round(ny * 100);
+    const hue = Math.round(nx * 300);
+    glare.style.opacity = '1';
+    const w = r.width, h = r.height;
+    // 마우스 주변에 크기·위치가 다른 타원 3개를 겹쳐 유기적 형태 생성
+    const ox = px, oy = py;
+    const rx1 = Math.round(w * (0.28 + Math.sin(nx * 4) * 0.08));
+    const ry1 = Math.round(h * (0.32 + Math.cos(ny * 3) * 0.07));
+    const rx2 = Math.round(w * (0.18 + Math.cos(nx * 5) * 0.06));
+    const ry2 = Math.round(h * (0.22 + Math.sin(ny * 4) * 0.05));
+    const off = 14;
+    glare.style.background = `
+      radial-gradient(ellipse ${rx1}px ${ry1}px at ${ox}% ${oy}%,
+        hsla(${hue},100%,68%,0.09) 0%, transparent 100%),
+      radial-gradient(ellipse ${rx2}px ${ry2}px at ${Math.min(99,ox+off)}% ${Math.max(1,oy-off)}%,
+        hsla(${hue+90},100%,68%,0.07) 0%, transparent 100%),
+      radial-gradient(ellipse ${rx2}px ${ry2}px at ${Math.max(1,ox-off)}% ${Math.min(99,oy+off)}%,
+        hsla(${hue+200},100%,68%,0.07) 0%, transparent 100%)
+    `;
+  };
+  const onLeave = () => {
+    const face = document.getElementById('card-front-face');
+    if (face) face.style.animationPlayState = 'running';
+    glare.style.opacity = '0';
+    card.style.transform = '';
+  };
+
+  imgArea.addEventListener('mousemove', onMove);
+  imgArea.addEventListener('mouseleave', onLeave);
+  _cardTiltCleanup = () => {
+    imgArea.removeEventListener('mousemove', onMove);
+    imgArea.removeEventListener('mouseleave', onLeave);
+  };
+}
+
+
+const DLG_FONT_DEFAULT = 16;
+const DLG_FONT_MIN = 12;
+const DLG_FONT_MAX = 22;
+let _dlgFontSize = DLG_FONT_DEFAULT;
+
+function adjustDlgFontSize(delta) {
+  if (delta === 0) {
+    _dlgFontSize = DLG_FONT_DEFAULT; // 가 버튼: 원본 복귀
+  } else {
+    _dlgFontSize = Math.min(DLG_FONT_MAX, Math.max(DLG_FONT_MIN, _dlgFontSize + delta));
+  }
+  document.querySelectorAll('#ep-read-dlg .db').forEach(el => {
+    el.style.fontSize = _dlgFontSize + 'px';
+  });
+}
+
+// ── 말풍선 클릭 복사 ──
+let _toastTimer = null;
+let _dragStartX = 0, _dragStartY = 0, _isDragging = false;
+
+document.addEventListener('mousedown', (e) => {
+  _dragStartX = e.clientX;
+  _dragStartY = e.clientY;
+  _isDragging = false;
+});
+document.addEventListener('mousemove', (e) => {
+  if (Math.abs(e.clientX - _dragStartX) > 4 || Math.abs(e.clientY - _dragStartY) > 4) {
+    _isDragging = true;
+  }
+});
+
+function copyBubble(el, event) {
+  if (_isDragging) return;
+  const text = el.getAttribute('data-plain') || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    const x = (event?.clientX ?? 0) + 14;
+    const y = (event?.clientY ?? 0) - 10;
+    toast.style.left = x + 'px';
+    toast.style.top  = y + 'px';
+    toast.style.opacity = '1';
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1200);
+  }).catch(() => {});
+}
 
 </script>
 

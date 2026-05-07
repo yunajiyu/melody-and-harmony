@@ -50,7 +50,7 @@
   font-weight: normal; font-display: swap;
 }
 :root{
-  --bg:#EEF0F3;
+  --bg:#F8F5FC;
   --surface:#FFFFFF;
   --border:#ECEEF1;
   --border-strong:#E0E3E8;
@@ -74,7 +74,49 @@
   --sh:#7B5B3A;     --sh-bg:#F0E8DF;     --sh-border:#D9C7B0;
   --si:#4A4A4A;     --si-bg:#E8E8E8;     --si-border:#C7C7C7;
 }
-body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:16px;min-height:100vh}
+body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:16px;min-height:100vh;position:relative}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  pointer-events:none;z-index:0;
+  filter:blur(22px);
+  animation:bg-aurora-a 18s ease-in-out infinite alternate,
+             bg-aurora-b 24s ease-in-out infinite alternate-reverse;
+}
+@keyframes bg-aurora-a{
+  0%{
+    background:
+      radial-gradient(ellipse 90% 50% at 10% 15%, rgba(255,160,195,0.32) 0%, transparent 65%),
+      radial-gradient(ellipse 70% 45% at 88% 8%,  rgba(255,205,140,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 80% 48% at 55% 4%,  rgba(255,235,130,0.25) 0%, transparent 65%),
+      radial-gradient(ellipse 65% 40% at 25% 5%,  rgba(155,230,175,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 75% 45% at 78% 22%, rgba(145,205,255,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 38% at 48% 18%, rgba(195,160,255,0.25) 0%, transparent 65%);
+  }
+  50%{
+    background:
+      radial-gradient(ellipse 85% 52% at 30% 25%, rgba(255,195,155,0.30) 0%, transparent 65%),
+      radial-gradient(ellipse 72% 42% at 65%  5%, rgba(160,240,195,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 78% 46% at 15% 10%, rgba(150,195,255,0.30) 0%, transparent 65%),
+      radial-gradient(ellipse 68% 44% at 82% 18%, rgba(215,160,255,0.26) 0%, transparent 65%),
+      radial-gradient(ellipse 80% 50% at 45% 22%, rgba(255,215,145,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 58% 36% at 90% 30%, rgba(255,165,190,0.30) 0%, transparent 65%);
+  }
+  100%{
+    background:
+      radial-gradient(ellipse 88% 48% at 70% 12%, rgba(200,235,175,0.30) 0%, transparent 65%),
+      radial-gradient(ellipse 66% 44% at 18% 20%, rgba(255,175,205,0.32) 0%, transparent 65%),
+      radial-gradient(ellipse 76% 50% at 85% 25%, rgba(255,225,145,0.27) 0%, transparent 65%),
+      radial-gradient(ellipse 62% 40% at 42%  8%, rgba(175,195,255,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 82% 46% at 60% 20%, rgba(210,165,255,0.26) 0%, transparent 65%),
+      radial-gradient(ellipse 56% 35% at 12% 30%, rgba(155,235,210,0.28) 0%, transparent 65%);
+  }
+}
+@keyframes bg-aurora-b{
+  0%  {opacity:0.75}
+  50% {opacity:1}
+  100%{opacity:0.8}
+}
 
 /* ══════════════════════════════════════
    셸 + 사이드바 — 데스크탑 기본값
@@ -83,6 +125,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .shell{
   max-width:1280px;margin:1.5rem auto;padding:0 1.5rem;
   display:flex;align-items:flex-start;
+  position:relative;z-index:1;
 }
 .shell-card{
   background:var(--surface);
@@ -1875,7 +1918,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   </div>
 
   <div class="sidebar-bottom">
-    Harmony Archive<br>v3 · 2026
+    Harmony Archive<br>v1 · 2026
   </div>
 </aside>
 
@@ -2084,10 +2127,10 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <div class="bottom-card-hdr">
         <div>
           <div class="bottom-card-title">서사 요약</div>
-          <div class="bottom-card-sub" id="home-summary-sub">전체 흐름</div>
+          <div class="bottom-card-sub" id="home-summary-sub">1학년 흐름</div>
         </div>
       </div>
-      <p class="summary-text" id="home-summary-text">해람초·해람중 9년을 한 번도 같은 반이 되지 않은 두 사람이, 해솔고 1학년에서 처음으로 짝꿍이 된다. 수환의 냉정한 말투와 시몬의 흘려버리는 여유가 충돌하고 스치며, 2학년의 단추·김밥·손목 묶기·제주를 거쳐 서로를 점점 더 선명하게 의식하게 된다. 3학년 동아리실 첫눈 이후, 졸업식 전날 밤 소주 8병 자리에서 오래 참았던 말들이 흘러나온다.</p>
+      <p class="summary-text" id="home-summary-text">해람초·해람중을 거쳐 해솔고에서 처음으로 같은 반이 된 두 사람. 앞자리, 뒷자리가 되면서 첫 접점이 생긴다. 단 한번도 통하지 않는 수환의 농담과 한숨, 체육대회에서 잡힌 옷자락에 "그렇게 기분 나쁘단 뜻은 아니야"라는 말을 돌려준 날 — 아직 그게 무엇인지 모르지만 눈에 밟히기 시작한 시절.</p>
     </div>
 
     <!-- 우: 학년별 에피소드 목록 -->
@@ -2130,6 +2173,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <div class="ep-filter-chip" data-era="y1" onclick="filterEpsByGrade('y1', event)">1학년</div>
       <div class="ep-filter-chip" data-era="y2" onclick="filterEpsByGrade('y2', event)">2학년</div>
       <div class="ep-filter-chip" data-era="y3" onclick="filterEpsByGrade('y3', event)">3학년</div>
+      <div class="ep-filter-chip" data-era="adult" onclick="filterEpsByGrade('adult', event)">성인</div>
     </div>
 
     <!-- 키워드 검색바 -->
@@ -2890,8 +2934,8 @@ function resetToDefault(){
   buildMiniCards();
   buildActiveStats();
   buildBigTimeline();
-  document.getElementById('home-summary-text').textContent = '해람초·해람중 9년을 한 번도 같은 반이 되지 않은 두 사람이, 해솔고 1학년에서 처음으로 짝꿍이 된다. 수환의 냉정한 말투와 시몬의 흘려버리는 여유가 충돌하고 스치며, 2학년의 단추·김밥·손목 묶기·제주를 거쳐 서로를 점점 더 선명하게 의식하게 된다. 3학년 동아리실 첫눈 이후, 졸업식 전날 밤 소주 8병 자리에서 오래 참았던 말들이 흘러나온다.';
-  document.getElementById('home-summary-sub').textContent = '전체 흐름';
+  document.getElementById('home-summary-text').textContent = '해람초·해람중을 거쳐 해솔고에서 처음으로 같은 반이 된 두 사람. 앞자리, 뒷자리가 되면서 첫 접점이 생긴다. 단 한번도 통하지 않는 수환의 농담과 한숨, 체육대회에서 잡힌 옷자락에 "그렇게 기분 나쁘단 뜻은 아니야"라는 말을 돌려준 날 — 아직 그게 무엇인지 모르지만 눈에 밟히기 시작한 시절.';
+  document.getElementById('home-summary-sub').textContent = '1학년 흐름';
   buildHomeEpList('y1');
 }
 
@@ -3015,7 +3059,10 @@ mpAudio.addEventListener('timeupdate',()=>{
   if(cur) cur.textContent = mpFmtTime(mpAudio.currentTime);
   if(tot) tot.textContent = mpFmtTime(mpAudio.duration);
 });
-mpAudio.addEventListener('ended', mpNext);
+mpAudio.addEventListener('ended', ()=>{
+  mpIsPlaying = true; // 끝나면 다음 곡 자동재생
+  mpNext();
+});
 mpAudio.addEventListener('play',()=>{ mpIsPlaying=true; mpUpdatePlayBtn(); });
 mpAudio.addEventListener('pause',()=>{ mpIsPlaying=false; mpUpdatePlayBtn(); });
 
@@ -3496,7 +3543,7 @@ function closeEpRead() {
 // 에피소드 학년 필터 + 검색
 // ════════════════════════════
 let currentEpGrade = 'all';
-const GRADE_MAP = { y1:'1학년', y2:'2학년', y3:'3학년' };
+const GRADE_MAP = { y1:'1학년', y2:'2학년', y3:'3학년', adult:'성인' };
 
 function filterEpsByKeyword(q) {
   applyEpFilter(q);
@@ -3867,6 +3914,7 @@ const EP_OVERVIEW = {
   y1: '해람초·해람중을 거쳐 해솔고에서 처음으로 같은 반이 된 두 사람. 앞자리, 뒷자리가 되면서 첫 접점이 생긴다. 단 한번도 통하지 않는 수환의 농담과 한숨, 체육대회에서 잡힌 옷자락에 "그렇게 기분 나쁘단 뜻은 아니야"라는 말을 돌려준 날 — 아직 그게 무엇인지 모르지만 눈에 밟히기 시작한 시절.',
   y2: '다른 반이 되었지만 묘하게 엮이는 날들이 늘어난다. 야자 땡땡이를 치고 오락실에 간 날, 스카치테이프로 손목을 묶어버린 날, 제주도로 향하는 첫 수학여행 — 두 사람 사이의 거리가 좁혀지는 것을 서로 모른 척한다.',
   y3: '졸업을 앞두고 더 이상 모른 척할 수 없게 된다. 영화제작부 동아리실의 빨간 노끈과 첫눈, 당돌한 고백. "네가 나 좋아한다는 말 하려는 거 아니야?" — 끝이면서 동시에 시작된다.',
+  adult: '각자의 길로 떠났지만, 도착지는 같았다. 수환은 재수 끝에 카이스트로, 시몬은 서울 자취방으로. 버스로 10분 거리였던 학창시절이 기차로 두 시간의 거리가 된 뒤, 끝내 다시 만나 미래를 약속하고 함께 살아가기로 한다.',
 };
 
 // ════════════════════════════

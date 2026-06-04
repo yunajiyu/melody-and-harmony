@@ -209,21 +209,51 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .cards-board{
   display:grid;
   grid-template-columns:148px 1fr 0.5fr;
+  grid-template-rows:auto 220px;
   gap:16px;
   margin-bottom:2rem;
   align-items:stretch;
 }
-
-/* 좌측: 큰 활성 카드 + 통계 (Cards 영역) */
+/* col1 row1: 미니카드 (row1만) */
+.mini-cards-section{
+  grid-column:1;
+  grid-row:1;
+  display:flex;
+  flex-direction:column;
+}
+/* col2 row1: 메인카드+통계 */
 .active-card-section{
+  grid-column:2;
+  grid-row:1;
   display:flex;
   flex-direction:column;
 }
+/* col3 row1: 위젯A */
+.home-widget-section{
+  grid-column:3;
+  grid-row:1;
+  display:flex;
+  flex-direction:column;
+}
+/* col1+col2 row2: 갤러리 (미니카드+메인카드 너비 합산 span) */
 .home-gallery-section{
+  grid-column:1 / 3;
+  grid-row:2;
   display:flex;
   flex-direction:column;
-  min-height:0;
 }
+.home-gallery-section > div {
+  flex:1;
+  height:100%;
+}
+/* col3 row2: 위젯B */
+.home-widgetb-section{
+  grid-column:3;
+  grid-row:2;
+  display:flex;
+  flex-direction:column;
+}
+.home-card-bottom{ display:contents; }
 .active-card-wrap{
   perspective:1800px;
   margin-bottom:1.25rem;
@@ -1370,11 +1400,36 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     margin-top:0 !important;
   }
 
-  /* 갤러리: order 1 → 카드 바로 아래 */
+  /* 모바일: 카드 하단 갤러리+위젯B → 세로 쌓기 */
+  .home-card-bottom{
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+  }
   .home-gallery-section{
+    grid-column:auto !important;
+    grid-row:auto !important;
     order:1 !important;
     width:100%;
-    min-height:240px;
+    min-height:200px;
+  }
+  .home-gallery-section > div {
+    height:200px;
+  }
+  .home-widget-section{
+    order:3 !important;
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:100%;
+    height:auto !important;
+    min-height:120px;
+  }
+  .home-widgetb-section{
+    order:2 !important;
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:100%;
+    height:auto !important;
+    min-height:120px;
   }
 
   /* 나머지 카드들: order 2 → 갤러리 아래, 정사각형 한 줄 */
@@ -1731,7 +1786,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <span class="sidebar-item-icon">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6" r="1.2" stroke="currentColor" stroke-width="1.5"/><path d="M3 12L6.5 8.5L9 11L11 9L13.5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       </span>
-      로그
+      갤러리
     </div>
   </nav>
   <!-- 기념일 위젯 (4:2.5 비율, 이미지 배경) -->
@@ -2027,12 +2082,12 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   <!-- ── CARDS BOARD ── -->
   <div class="cards-board">
 
-    <!-- 데스크탑: 좌(학년목록) | 모바일: 2번째(아래 한 줄) -->
+    <!-- col1 row1: 미니카드 -->
     <div class="mini-cards-section">
       <div class="mini-cards-grid" id="mini-cards-grid"></div>
     </div>
 
-    <!-- 데스크탑: 우(큰 카드) | 모바일: 1번째(상단 크게) -->
+    <!-- col2 row1: 메인카드 + 통계 -->
     <div class="active-card-section">
       <div class="active-card-wrap">
         <div class="active-card" id="active-card" onclick="flipActiveCard()">
@@ -2042,16 +2097,36 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <div class="active-stats" id="active-stats"></div>
     </div>
 
-    <!-- 데스크탑: 우우(기념일+정보) | 모바일: 3번째 -->
+    <!-- col3 row1: 위젯A -->
+    <div class="home-widget-section">
+      <div id="home-side-widget" style="flex:1;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:100%">
+        <span style="font-size:11px;color:var(--text-faint)">위젯 A</span>
+      </div>
+    </div>
+
+    <!-- col1+col2 row2: 갤러리 (미니카드+메인카드 너비 합산) -->
     <div class="home-gallery-section">
-      <div style="flex:1;width:100%;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--border);position:relative;min-height:180px">
-        <div style="position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center">
-          <div style="font-size:12px;color:var(--text-faint)">이미지</div>
+      <div style="position:relative;width:100%;height:100%;min-height:180px;border-radius:14px;overflow:hidden;background:var(--bg);border:1px solid var(--border)">
+        <div id="home-mini-gallery-col" style="position:absolute;inset:0">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.25);z-index:10">
+            <div id="hmg-progress-fill" style="height:100%;width:0%;background:rgba(255,255,255,0.85);border-radius:3px;transition:none"></div>
+          </div>
+          <div id="hmg-slide" style="width:100%;height:100%;cursor:grab;transition:opacity 0.3s;user-select:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb;background:var(--bg)">이미지</div>
+          <div onclick="hmgSlide(-1)" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:26px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 6px rgba(0,0,0,0.4);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">‹</div>
+          <div onclick="hmgSlide(1)"  style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:26px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 6px rgba(0,0,0,0.4);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">›</div>
+          <div id="hmg-pause-btn" onclick="hmgTogglePause()" style="position:absolute;top:10px;right:14px;cursor:pointer;font-size:10px;color:rgba(255,255,255,0.85);text-shadow:0 1px 4px rgba(0,0,0,0.35);z-index:10;user-select:none">⏸</div>
         </div>
       </div>
     </div>
 
-  </div>
+    <!-- col3 row2: 위젯B -->
+    <div class="home-widgetb-section">
+      <div id="home-side-widget-b" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;width:100%;height:100%">
+        <span style="font-size:10px;color:var(--text-faint)">위젯 B</span>
+      </div>
+    </div>
+
+  </div><!-- /cards-board -->
 
   <!-- ── 공동 연표 ── -->
   <div style="margin-bottom:1.75rem">
@@ -2253,37 +2328,23 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 ════════════════════════════════════════ -->
 <div id="page-album" class="page">
 
-  <!-- 목록 뷰 -->
-  <div id="album-list-view">
-    <div style="font-size:20px;font-weight:500;margin-bottom:1.25rem">앨범</div>
-    <div class="album-era-tabs">
-      <div class="album-tab active" data-era="y1" onclick="switchAlbum('y1',event)">1학년</div>
-      <div class="album-tab" data-era="y2" onclick="switchAlbum('y2',event)">2학년</div>
-      <div class="album-tab" data-era="y3" onclick="switchAlbum('y3',event)">3학년</div>
-      <div class="album-tab" data-era="adult" onclick="switchAlbum('adult',event)">성인</div>
+  <!-- 캐러셀 뷰 -->
+  <div id="album-carousel-view">
+
+    <!-- 큰 메인 이미지 + 화살표 오버레이 -->
+    <div style="position:relative;border-radius:20px;overflow:hidden;background:var(--bg);border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:12px">
+      <div id="alb-main-img" style="height:480px;transition:opacity 0.25s;display:flex;align-items:center;justify-content:center;font-size:14px;color:#bbb;background:var(--bg)">이미지</div>
+      <!-- 좌 화살표 -->
+      <div onclick="albSlide(-1)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:32px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 8px rgba(0,0,0,0.45);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">‹</div>
+      <!-- 우 화살표 -->
+      <div onclick="albSlide(1)"  style="position:absolute;right:16px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:32px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 8px rgba(0,0,0,0.45);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">›</div>
     </div>
-    <div class="album-grid" id="album-grid"></div>
+
+    <!-- 바둑판 정사각 그리드 -->
+    <div id="alb-thumbs" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
+
   </div>
 
-  <!-- 포스트 뷰 (갤러리 카드 클릭 시) -->
-  <div id="album-post-view" style="display:none">
-    <div class="read-ep-header">
-      <div class="read-ep-back" onclick="closeAlbumPost()">← 앨범 목록</div>
-      <div class="read-ep-title" id="album-post-title">제목</div>
-      <div class="read-ep-meta" id="album-post-meta">—</div>
-    </div>
-
-    <!-- 블로그 포스트 본문 -->
-    <div class="blog-post-wrap">
-
-      <!-- 커버 이미지 -->
-      <div class="blog-post-cover" id="album-post-cover"></div>
-
-      <!-- 포스트 본문 영역 (이미지+텍스트 블록 반복) -->
-      <div class="blog-post-body" id="album-post-body"></div>
-
-    </div>
-  </div>
 </div>
 
 
@@ -2329,9 +2390,26 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 <script>
 // ════════════════════════════
+// Supabase 설정
+// ════════════════════════════
+const SB_URL = 'https://tfwnspnyzktdrgancwpz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmd25zcG55emt0ZHJnYW5jd3B6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NzMzNDYsImV4cCI6MjA5NjA0OTM0Nn0.9HGw3vaOX_fMKZGWn3QfICjdg3YODz7F4t7xJFpvYiU';
+
+async function sbGet(key) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/site_config?key=eq.${key}&select=*`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return Array.isArray(rows) && rows[0]?.value ? rows[0].value : null;
+  } catch(e) { return null; }
+}
+
+// ════════════════════════════
 // 데이터
 // ════════════════════════════
-const ERAS = [
+let ERAS = [
   {
     id: 'y1', label: '1학년',
     sh: { sub: '1학년 · 해솔고', tags: ['거만함','싸가지','마이웨이','뻔뻔함','포커페이스'] },
@@ -2383,7 +2461,7 @@ const ERAS = [
   },
 ];
 
-const EPS = [
+let EPS = [
   { id:0, title:'오후의 책갈피와 성경책', grade:'1학년', g:'g1', size:'3,005자',  tags:['sh','si'], thumb:'tl-bg',
     summary:'해람초·해람중. 9년을 지나 처음으로 같은 반. 수환의 책갈피가 떨어지며 시작된 첫 대화는 몇번의 탐색 끝에 "더 알고 싶다"는 말이 착지했다.',
     mdFiles:['dialogue_log_1학년_첫만남.md','dialogue_log-성경.md'] },
@@ -2467,9 +2545,9 @@ function SP(name) {
     }
   }
 
-  if (name === 'album' && isSamePage) {
-    document.getElementById('album-post-view').style.display = 'none';
-    document.getElementById('album-list-view').style.display = 'block';
+  if (name === 'album') {
+    // 최초 진입 시 캐러셀 초기화
+    if (typeof initAlbumCarousel === 'function') initAlbumCarousel();
   }
 
   if (name === 'profile' && isSamePage) {
@@ -2498,7 +2576,8 @@ let activeBackChar = 'sh'; // 뒷면 표시 캐릭터
 
 function buildActiveCardFront(era) {
   const badgeLabels = { y1:'1학년', y2:'2학년', y3:'3학년', adult:'성인 프로필' };
-  const imgUrl = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' }[era.id];
+  const cardImgs = window._CARD_IMGS || { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
+  const imgUrl = cardImgs[era.id];
   const imgHtml = imgUrl
     ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;position:absolute;inset:0">`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-faint)">이미지</div>`;
@@ -2689,7 +2768,7 @@ function resetWrapPaddingTop() {
 
 function buildMiniCards() {
   const grid = document.getElementById('mini-cards-grid');
-  const CARD_IMGS = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
+  const CARD_IMGS = window._CARD_IMGS || { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
   const others = ERAS.filter(e => e.id !== activeEraId);
   grid.innerHTML = others.map(era => {
     const imgUrl = CARD_IMGS[era.id];
@@ -2729,9 +2808,8 @@ function buildBigTimeline() {
   const ERA_DOT_COLOR = { y1:'#F6C800', y2:'#2BC8BF', y3:'#4A81FF', adult:'#995FFF' };
   document.documentElement.style.setProperty('--tl-active-color', ERA_DOT_COLOR[activeEraId] || '#E82167');
 
-  // nodes: bubble.top=위말풍선(수환), bubble.bot=아래말풍선(시몬)
-  // isHeart: 3학년(y3), 성인(adult) 노드
-  const nodes = [
+  // nodes: DB에서 로드된 big_tl_nodes 또는 하드코딩 fallback
+  const nodes = window._BIG_TL_NODES || [
     { lbl:'책갈피',          sub:'1학년, 봄 앞뒷자리',  eraId:'y1',    hasEp:true,  isHeart:false,
       bubble:{ top:'책갈피 좀 주워줘',      bot:'미안~ 실수였어' } },
     { lbl:'땡땡이와 오락실',  sub:'2학년, 여름',         eraId:'y2',    hasEp:true,  isHeart:false,
@@ -3247,7 +3325,7 @@ function mpSyncNoteDance(){
 
 
 
-const TL_ALL = [
+let TL_ALL = [
   { lbl:'1학년', sub:'2013–14', filled:true  },
   { lbl:'2학년', sub:'2014–15', filled:true  },
   { lbl:'3학년', sub:'2015–16', filled:true  },
@@ -3257,7 +3335,7 @@ const TL_ALL = [
   { lbl:'전역',  sub:'2020–',   filled:false },
   { lbl:'현재',  sub:'33세',    filled:false },
 ];
-const TL_ERA = {
+let TL_ERA = {
   y1:    [ { lbl:'입학', sub:'3월', filled:true }, { lbl:'봄', sub:'4–5월', filled:false }, { lbl:'체육대회', sub:'5월', filled:true }, { lbl:'여름', sub:'7–8월', filled:false } ],
   y2:    [ { lbl:'봄', sub:'3–4월', filled:false }, { lbl:'여름', sub:'7월', filled:true }, { lbl:'수학여행', sub:'9월', filled:true }, { lbl:'이후', sub:'10–12월', filled:false } ],
   y3:    [ { lbl:'봄', sub:'3–4월', filled:false }, { lbl:'졸업식 전', sub:'12월', filled:true }, { lbl:'고백', sub:'졸업식', filled:true } ],
@@ -3267,7 +3345,7 @@ const TL_ERA = {
 // ════════════════════════════
 // 더미 통계 데이터
 // ════════════════════════════
-const ERA_STATS = {
+let ERA_STATS = {
   y1:    { eps:'2', nodes:'6',  chars:'4,688자' },
   y2:    { eps:'4', nodes:'14', chars:'79,112자' },
   y3:    { eps:'2', nodes:'7',  chars:'69,037자' },
@@ -3299,7 +3377,7 @@ function buildMiniTL(nodes) {
 const MD_BASE = 'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/episodes/';
 
 // md 텍스트 → dt HTML 블록 배열 반환
-const PROFILE_IMGS = {
+let PROFILE_IMGS = {
   sh: {
     y1:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-sh-profile.png',
     y2:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/2y-sh-profile.png',
@@ -3522,7 +3600,7 @@ function applyEpFilter(keyword) {
 // ════════════════════════════
 // 홈 프로필 카드 더미 데이터
 // ════════════════════════════
-const HOME_PROFILE = {
+let HOME_PROFILE = {
   y1: {
     sh: { age:'16세 (1학년)', birthday:'1997.02.01', height:'184cm', mbti:'INTJ', family:'외동 · 부모님', personality:'냉정하고 직설적, 감정 표현이 거의 없다. 자기 페이스를 지키는 것이 핵심 동기. 시몬 앞에서만 미세하게 흔들리기 시작.', keywords:['냉정함','직설적','이과 성향','책벌레','싸가지 없는 듯한 말투'] },
     si: { age:'16세 (1학년)', birthday:'1997.03.27', height:'181cm', mbti:'ENFP', family:'부모·여동생 한나', personality:'사교적이고 장난기 많음. 분위기 메이커. 수환의 냉소가 흘러내리는 걸 이상하게 즐기기 시작.', keywords:['사교적','장난기','분위기 메이커','눈치 빠름','초콜릿폰'] },
@@ -3599,7 +3677,7 @@ function warpToProfile(targetEra) {
 
 // ════════════════════════════
 // ── 프로필 전신이미지 토글 ──
-const FULLBODY_IMGS = {
+let FULLBODY_IMGS = {
   sh: {
     y1:    'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/1y-sh-fulb.png',
     y2:    'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/2y-sh-fulb.png',
@@ -3643,7 +3721,7 @@ function toggleFullBody(id) {
 
 // 프로필 학년별 콘텐츠 업데이트 — 열 기반
 // ════════════════════════════
-const PROFILE_FULL_DATA = {
+let PROFILE_FULL_DATA = {
   sh: {
     name:'정수환', en:'Jeong Suhwan',
     avatarBg:'#F0E8DF', avatarColor:'#7B5B3A', avatarChar:'정',
@@ -3866,7 +3944,7 @@ function renderEpList(targetId, eps, from) {
 // ════════════════════════════
 // 에피소드 개요 텍스트 데이터
 // ════════════════════════════
-const EP_OVERVIEW = {
+let EP_OVERVIEW = {
   all: '해람초·해람중 9년을 단 한 번도 같은 반이 되지 않고 지나쳐 온 두 사람이, 해솔고 1학년에서 처음으로 짝꿍이 된다. 수환의 냉정한 말투와 시몬의 흘려버리는 여유가 충돌하고 스친다. 다른 반이 되었지만 묘하게 엮이는 날들이 늘어가는 2학년. 서로를 점점 더 선명하게 의식하게 된다. 3학년 졸업식 날 저녁, 오래 참았던 말들이 흘러나온다. 넓은 도시에 살게 된 지금, 서울-대전행 기차표를 지나, 한 공간에서 두 사람 사이의 새로운 시간을 예고한다.',
   y1: '해람초·해람중을 거쳐 해솔고에서 처음으로 같은 반이 된 두 사람. 앞자리, 뒷자리가 되면서 첫 접점이 생긴다. 단 한번도 통하지 않는 수환의 농담과 한숨, 체육대회에서 잡힌 옷자락에 "그렇게 기분 나쁘단 뜻은 아니야"라는 말을 돌려준 날 — 아직 그게 무엇인지 모르지만 눈에 밟히기 시작한 시절.',
   y2: '다른 반이 되었지만 묘하게 엮이는 날들이 늘어난다. 야자 땡땡이를 치고 오락실에 간 날, 스카치테이프로 손목을 묶어버린 날, 제주도로 향하는 첫 수학여행 — 두 사람 사이의 거리가 좁혀지는 것을 서로 모른 척한다.',
@@ -3877,7 +3955,7 @@ const EP_OVERVIEW = {
 // ════════════════════════════
 // 앨범 데이터 확장 (썸네일 포함)
 // ════════════════════════════
-const ALBUM_DATA_EX = {
+let ALBUM_DATA_EX = {
   y1: [
     { title:'교실 — 짝꿍 자리', sub:'1학년 · 해솔고 교실', color:'#EEF4FB',
       images:[{c:'#EEF4FB',lbl:'창가 짝꿍 자리'},{c:'#F5EFE8',lbl:'성경책과 책갈피'},{c:'#EFEFEF',lbl:'오후 교실'}] },
@@ -3908,79 +3986,101 @@ const ALBUM_DATA_EX = {
 
 // 앨범 슬라이더 상태 (프로필 갤러리용으로만 유지)
 
+// ── 갤러리 탭 전용 이미지 데이터 (홈 미니갤러리와 별개)
+let GALLERY_TAB_DATA = [
+  {c:'#EEF4FB',lbl:'창가 짝꿍 자리 — 1학년'},
+  {c:'#F5EFE8',lbl:'성경책과 책갈피 — 1학년'},
+  {c:'#EFEFEF',lbl:'오후 교실 — 1학년'},
+  {c:'#F5EFE8',lbl:'운동장 응원 — 체육대회'},
+  {c:'#EEF4FB',lbl:'매점 앞 — 단추 사건'},
+  {c:'#EFEFEF',lbl:'하우스 오브 더 데드 — 오락실'},
+  {c:'#F0E8DF',lbl:'수환의 앞치마 — 일요일 김밥'},
+  {c:'#F5EFE8',lbl:'스카치테이프 — 손목 묶기'},
+  {c:'#EEF4FB',lbl:'초록 남방 둘 — 제주'},
+  {c:'#F0E8DF',lbl:'승마 공원 당근 — 제주'},
+  {c:'#F5EFE8',lbl:'느린 우체통 — 제주'},
+  {c:'#F0E8DF',lbl:'빨간 노끈 — 동아리실'},
+  {c:'#EEF4FB',lbl:'첫눈 내리는 창 — 3학년'},
+  {c:'#F5EFE8',lbl:'하나님 책상 머그컵 — 졸업 전'},
+  {c:'#EFEFEF',lbl:'초밥집 점심특선 — 첫 데이트'},
+  {c:'#F5EFE8',lbl:'서울 자취방 — 졸업 후'},
+];
+
+// ── 홈 미니갤러리 전용 이미지 데이터 (갤러리 탭과 별개)
+let HOME_MINI_GALLERY = [
+  {c:'#F0EAE2',lbl:'햇살 드는 창가 — 책갈피 사건'},
+  {c:'#E8F0F8',lbl:'체육대회 — 잡힌 옷자락'},
+  {c:'#F2EDE8',lbl:'오락실 — 하우스 오브 더 데드'},
+  {c:'#ECF5EC',lbl:'제주 — 초록 남방 둘'},
+  {c:'#F5EEF8',lbl:'동아리실 — 빨간 노끈'},
+  {c:'#FFF5E6',lbl:'졸업식 복도 — 흰 장미'},
+  {c:'#EAF2F8',lbl:'버스 정류장 — 10분 거리'},
+  {c:'#F8EEF0',lbl:'동탄 아파트 — 창밖 비'},
+];
+
 // ════════════════════════════
-// 앨범
+// 갤러리 탭 — 화살표 수동 전환 + 바둑판 그리드
 // ════════════════════════════
-function switchAlbum(era, e) {
-  document.querySelectorAll('.album-tab').forEach(t => t.classList.remove('active'));
-  e.target.classList.add('active');
-  const items = ALBUM_DATA_EX[era] || [];
-  document.getElementById('album-grid').innerHTML = items.map((item, i) => `
-    <div class="album-card" onclick="openAlbumPostByKey('${era}', ${i})">
-      <div class="album-thumb" style="background:${item.color}">
-        ${item.images[0]?.url ? `<img src="${item.images[0].url}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">` : ''}
-        <div class="album-hover-overlay">
-          <div class="album-hover-title">${item.title}</div>
-          <div class="album-hover-sub">${item.sub}</div>
-        </div>
-      </div>
-    </div>`).join('');
-}
+(function(){
+  let albFlat = [];
+  let albIdx  = 0;
 
-// openAlbumPost의 안전한 버전 — era키 + 인덱스로 참조
-function openAlbumPostByKey(eraKey, idx) {
-  const item = ALBUM_DATA_EX[eraKey] && ALBUM_DATA_EX[eraKey][idx];
-  if (!item) return;
-  openAlbumPost(item);
-}
+  function albRender() {
+    const img = albFlat[albIdx];
+    if (!img) return;
 
-function openAlbumPost(item) {
-  document.getElementById('album-post-title').textContent = item.title;
-  document.getElementById('album-post-meta').textContent = item.sub;
+    // 메인 이미지
+    const mainEl = document.getElementById('alb-main-img');
+    if (mainEl) {
+      mainEl.style.opacity = '0';
+      setTimeout(() => {
+        mainEl.style.background = img.c;
+        mainEl.innerHTML = img.url
+          ? `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover">`
+          : `<div style="font-size:13px;color:#bbb">${img.lbl}</div>`;
+        mainEl.style.opacity = '1';
+      }, 180);
+    }
 
-  // 커버 이미지
-  document.getElementById('album-post-cover').innerHTML =
-    `<div style="width:100%;height:100%;background:${item.color};display:flex;align-items:center;justify-content:center;font-size:14px;color:#bbb;border-radius:12px">커버 이미지</div>`;
+    // 바둑판 정사각 그리드 — 선택된 셀 강조
+    const thumbsEl = document.getElementById('alb-thumbs');
+    if (thumbsEl) {
+      thumbsEl.innerHTML = albFlat.map((im, i) => `
+        <div onclick="albJump(${i})" style="
+          aspect-ratio:1/1;border-radius:8px;overflow:hidden;cursor:pointer;
+          background:${im.c};
+          outline:${i === albIdx ? '2.5px solid #F9C4D2' : 'none'};
+          outline-offset:-2px;
+          opacity:${i === albIdx ? '1' : '0.55'};
+          transition:opacity 0.18s,outline 0.18s;
+          display:flex;align-items:center;justify-content:center;
+        ">
+          ${im.url ? `<img src="${im.url}" style="width:100%;height:100%;object-fit:cover">` : ''}
+        </div>`).join('');
+    }
+  }
 
-  // 포스트 본문 — 이미지·텍스트 블록 교차
-  const body = document.getElementById('album-post-body');
-  body.innerHTML = item.images.map((img, i) => `
-    <div class="blog-block-img">
-      <div class="blog-block-img-inner" style="background:${img.c}">${img.lbl}</div>
-      <div class="blog-block-img-caption">↑ ${img.lbl}</div>
-    </div>
-    <div class="blog-block-text">
-      <div class="blog-h2">${item.title} — ${img.lbl}</div>
-      <div class="ph" style="width:95%;margin-bottom:8px"></div>
-      <div class="ph" style="width:80%;margin-bottom:8px"></div>
-      <div class="ph" style="width:88%;margin-bottom:8px"></div>
-      <div class="ph" style="width:70%"></div>
-    </div>
-    ${i < item.images.length - 1 ? '<div class="blog-block-divider"></div>' : ''}
-  `).join('');
+  window.albSlide = function(dir) {
+    albIdx = (albIdx + dir + albFlat.length) % albFlat.length;
+    albRender();
+  };
 
-  // 앨범 탭으로 전환 후 포스트 뷰 표시
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-album').classList.add('active');
-  document.querySelector('.sidebar-item[data-tab="album"]')?.classList.add('active');
-  currentPage = 'album';
+  window.albJump = function(i) {
+    albIdx = i;
+    albRender();
+  };
 
-  document.getElementById('album-list-view').style.display = 'none';
-  document.getElementById('album-post-view').style.display = 'block';
-  window.scrollTo(0, 0);
-}
-
-function closeAlbumPost() {
-  document.getElementById('album-post-view').style.display = 'none';
-  document.getElementById('album-list-view').style.display = 'block';
-  window.scrollTo(0, 0);
-}
+  window.initAlbumCarousel = function() {
+    albFlat = GALLERY_TAB_DATA.map(img => ({...img}));
+    albIdx  = 0;
+    albRender();
+  };
+})();
 
 // ════════════════════════════
 // 프로필 갤러리 슬라이더 — 자동슬라이드 + 프로그레스바
 // ════════════════════════════
-const PROFILE_GALLERY = {
+let PROFILE_GALLERY = {
   sh: [
     {c:'#F0E8DF',lbl:'1학년 — 짝꿍 자리 / 책갈피 사건'},
     {c:'#EEF4FB',lbl:'1학년 — 체육대회 / 공 맞히기'},
@@ -4191,6 +4291,94 @@ function initHomeGallery() {
 }
 
 // ════════════════════════════
+// 홈 미니 갤러리 캐러셀
+// ════════════════════════════
+(function(){
+  let hmgFlat  = [];
+  let hmgIdx   = 0;
+  let hmgPaused = false;
+  let hmgTimer  = null;
+  const HMG_DUR = 3000;
+
+  function hmgProgressStart() {
+    const fill = document.getElementById('hmg-progress-fill');
+    if (!fill) return;
+    fill.style.transition = 'none'; fill.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fill.style.transition = `width ${HMG_DUR}ms linear`;
+      fill.style.width = '100%';
+    }));
+  }
+
+  function hmgRender() {
+    if (!hmgFlat.length) return;
+    const img = hmgFlat[hmgIdx];
+    const slide = document.getElementById('hmg-slide');
+    if (!slide) return;
+    slide.style.opacity = '0';
+    setTimeout(() => {
+      slide.style.background = img.c;
+      slide.innerHTML = img.url
+        ? `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover">`
+        : `<div style="font-size:12px;color:#bbb">${img.lbl}</div>`;
+      slide.style.opacity = '1';
+    }, 200);
+
+    if (!hmgPaused) hmgProgressStart();
+  }
+
+  function hmgAutoNext() {
+    clearTimeout(hmgTimer);
+    if (hmgPaused) return;
+    hmgTimer = setTimeout(() => {
+      hmgIdx = (hmgIdx + 1) % hmgFlat.length;
+      hmgRender(); hmgAutoNext();
+    }, HMG_DUR);
+  }
+
+  function hmgBuildFlat() {
+    const all = HOME_MINI_GALLERY.map(img => ({...img}));
+    for (let i = all.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [all[i],all[j]] = [all[j],all[i]];
+    }
+    return all;
+  }
+
+  function initHmgDrag(el) {
+    let sx=0, drag=false;
+    const thr=40;
+    el.onmousedown  = e => { sx=e.clientX; drag=true; el.style.cursor='grabbing'; };
+    el.onmouseup    = e => { if(!drag)return; drag=false; el.style.cursor='grab'; const d=sx-e.clientX; if(Math.abs(d)>thr) window.hmgSlide(d>0?1:-1); };
+    el.onmouseleave = () => { if(drag){drag=false;el.style.cursor='grab';} };
+    el.ontouchstart = e => { sx=e.touches[0].clientX; drag=true; };
+    el.ontouchend   = e => { if(!drag)return; drag=false; const d=sx-e.changedTouches[0].clientX; if(Math.abs(d)>thr) window.hmgSlide(d>0?1:-1); };
+  }
+
+  window.hmgSlide = function(dir) {
+    hmgIdx = (hmgIdx + dir + hmgFlat.length) % hmgFlat.length;
+    hmgRender(); clearTimeout(hmgTimer); if (!hmgPaused) hmgAutoNext();
+  };
+  window.hmgJump = function(i) {
+    hmgIdx = i; hmgRender(); clearTimeout(hmgTimer); if (!hmgPaused) hmgAutoNext();
+  };
+  window.hmgTogglePause = function() {
+    hmgPaused = !hmgPaused;
+    const btn = document.getElementById('hmg-pause-btn');
+    if (btn) btn.textContent = hmgPaused ? '▶' : '⏸';
+    if (!hmgPaused) { hmgProgressStart(); hmgAutoNext(); }
+    else { clearTimeout(hmgTimer); }
+  };
+  window.initHmg = function() {
+    hmgFlat = hmgBuildFlat();
+    hmgIdx  = 0; hmgPaused = false;
+    hmgRender(); hmgAutoNext();
+    const slide = document.getElementById('hmg-slide');
+    if (slide) initHmgDrag(slide);
+  };
+})();
+
+// ════════════════════════════
 // 에피소드 필터 — 개요 연동
 // ════════════════════════════
 function filterEpsByGrade(grade, e) {
@@ -4208,7 +4396,7 @@ function filterEpsByGrade(grade, e) {
 // ════════════════════════════
 // 공동 연표 데이터
 // ════════════════════════════
-const JOINT_TL = [
+let JOINT_TL = [
   { age:'17세', year:'2014', shShort:'해솔고 입학', siShort:'해솔고 입학', sh:'해솔고 1학년 입학', si:'해솔고 1학년 입학', rel:'같은 반. 책갈피 계기로 첫 대화. 체육대회에서 접점 생김' },
   { age:'18세', year:'2015', shShort:'2학년', siShort:'2학년', sh:'해솔고 2학년 2반', si:'해솔고 2학년 6반', rel:'다른 반이지만 엮이는 일이 늘어난다.' },
   { age:'19세', year:'2016', shShort:'3학년', siShort:'3학년', sh:'해솔고 3학년', si:'해솔고 3학년', rel:'졸업식 전 고백. 대학 졸업 후 동거 약속', romance:true },
@@ -4381,22 +4569,170 @@ function buildJointTimeline() {
 }
 
 // ════════════════════════════
-// 초기화
+// Supabase 데이터 로드 후 초기화
 // ════════════════════════════
-buildEraGrid(); // (deprecated stub)
-renderActiveCard();
-buildMiniCards();
-buildHomeEpList(activeEraId);
-buildActiveStats();
-buildJointTimeline();
-buildBigTimeline();
-buildMiniTL(TL_ALL);
-renderEpList('full-ep-list', EPS, 'episodes');
-switchAlbum('y1', { target: document.querySelector('.album-tab') });
-buildProfileGallery();
-// 프로필 초기 렌더 (1학년)
-switchProfileEraGlobal('y1', { target: document.querySelector('#profile-era-tabs-global .profile-era-tab') });
-initHomeGallery();
+async function loadSiteData() {
+  try {
+    const keys = [
+      'eps_data','home_profile','profile_full','profile_imgs',
+      'joint_tl','era_tags','eras_meta','eras_nodes',
+      'era_stats','ep_overview','gallery_tab','home_mini_gallery',
+      'profile_gallery','album_data','big_tl_nodes','mini_tl'
+    ];
+    const results = await Promise.allSettled(keys.map(k => sbGet(k)));
+    const db = {};
+    keys.forEach((k, i) => {
+      if (results[i].status === 'fulfilled' && results[i].value !== null) {
+        db[k] = results[i].value;
+      }
+    });
+
+    // eps_data
+    if (db.eps_data && Array.isArray(db.eps_data)) {
+      EPS = db.eps_data.map((ep, i) => ({
+        ...ep, id: ep.id ?? i,
+        g: ep.g || ({1학년:'g1',2학년:'g2',3학년:'g3',성인:'ga'}[ep.grade] || 'g1'),
+        thumb: ep.thumb || 'tl-bg',
+        tags: ep.tags || ['sh','si'],
+        mdFiles: ep.mdFiles || [],
+      }));
+    }
+
+    // profile_imgs / fullbody
+    if (db.profile_imgs) {
+      const pi = db.profile_imgs;
+      if (pi.sh?.profile) Object.assign(PROFILE_IMGS.sh, pi.sh.profile);
+      if (pi.si?.profile) Object.assign(PROFILE_IMGS.si, pi.si.profile);
+      if (pi.sh?.fullbody) Object.assign(FULLBODY_IMGS.sh, pi.sh.fullbody);
+      if (pi.si?.fullbody) Object.assign(FULLBODY_IMGS.si, pi.si.fullbody);
+      if (pi.card) {
+        // 메인 카드 이미지 (buildActiveCardFront에서 사용)
+        window._CARD_IMGS = pi.card;
+      }
+    }
+
+    // home_profile
+    if (db.home_profile) {
+      ['y1','y2','y3','adult'].forEach(era => {
+        if (db.home_profile[era]) HOME_PROFILE[era] = db.home_profile[era];
+      });
+    }
+
+    // profile_full
+    if (db.profile_full) {
+      ['sh','si'].forEach(char => {
+        if (db.profile_full[char]) {
+          ['y1','y2','y3','adult'].forEach(era => {
+            if (db.profile_full[char][era]) {
+              PROFILE_FULL_DATA[char].eras[era] = db.profile_full[char][era];
+            }
+          });
+        }
+      });
+    }
+
+    // joint_tl
+    if (db.joint_tl && Array.isArray(db.joint_tl)) {
+      JOINT_TL.length = 0;
+      db.joint_tl.forEach(r => JOINT_TL.push(r));
+    }
+
+    // era_stats
+    if (db.era_stats) {
+      ['y1','y2','y3','adult'].forEach(era => {
+        if (db.era_stats[era]) ERA_STATS[era] = db.era_stats[era];
+      });
+    }
+
+    // ep_overview
+    if (db.ep_overview) {
+      Object.assign(EP_OVERVIEW, db.ep_overview);
+    }
+
+    // gallery_tab
+    if (db.gallery_tab && Array.isArray(db.gallery_tab)) {
+      GALLERY_TAB_DATA.length = 0;
+      db.gallery_tab.forEach(g => GALLERY_TAB_DATA.push(g));
+    }
+
+    // home_mini_gallery
+    if (db.home_mini_gallery && Array.isArray(db.home_mini_gallery)) {
+      HOME_MINI_GALLERY.length = 0;
+      db.home_mini_gallery.forEach(g => HOME_MINI_GALLERY.push(g));
+    }
+
+    // profile_gallery
+    if (db.profile_gallery) {
+      if (db.profile_gallery.sh) PROFILE_GALLERY.sh = db.profile_gallery.sh;
+      if (db.profile_gallery.si) PROFILE_GALLERY.si = db.profile_gallery.si;
+    }
+
+    // album_data (ALBUM_DATA_EX)
+    if (db.album_data) {
+      ['y1','y2','y3','adult'].forEach(era => {
+        if (db.album_data[era]) ALBUM_DATA_EX[era] = db.album_data[era];
+      });
+    }
+
+    // era_tags + eras_meta + eras_nodes → ERAS 재구성
+    if (db.era_tags || db.eras_meta || db.eras_nodes) {
+      ERAS = ERAS.map(era => {
+        const id = era.id;
+        const et = db.era_tags?.[id];
+        const em = db.eras_meta?.[id];
+        const en = db.eras_nodes?.[id];
+        return {
+          ...era,
+          sh: et?.sh ? { sub: et.sh.sub, tags: et.sh.tags } : era.sh,
+          si: et?.si ? { sub: et.si.sub, tags: et.si.tags } : era.si,
+          summary: em?.summary || era.summary,
+          nodes: en || era.nodes,
+        };
+      });
+    }
+
+    // mini_tl → TL_ALL / TL_ERA
+    if (db.mini_tl) {
+      if (db.mini_tl.tl_all && Array.isArray(db.mini_tl.tl_all)) {
+        TL_ALL.length = 0;
+        db.mini_tl.tl_all.forEach(n => TL_ALL.push(n));
+      }
+      if (db.mini_tl.tl_era) {
+        ['y1','y2','y3','adult'].forEach(era => {
+          if (db.mini_tl.tl_era[era]) TL_ERA[era] = db.mini_tl.tl_era[era];
+        });
+      }
+    }
+
+    // big_tl_nodes → buildBigTimeline에서 사용
+    if (db.big_tl_nodes && Array.isArray(db.big_tl_nodes)) {
+      window._BIG_TL_NODES = db.big_tl_nodes.map(n => ({
+        ...n,
+        bubble: { top: n.bubble_top || '', bot: n.bubble_bot || '' },
+      }));
+    }
+
+  } catch(e) {
+    console.warn('Supabase 로드 실패, 기본값 사용:', e);
+  }
+
+  // ── 초기화
+  buildEraGrid();
+  renderActiveCard();
+  buildMiniCards();
+  buildHomeEpList(activeEraId);
+  buildActiveStats();
+  buildJointTimeline();
+  buildBigTimeline();
+  buildMiniTL(TL_ALL);
+  renderEpList('full-ep-list', EPS, 'episodes');
+  buildProfileGallery();
+  switchProfileEraGlobal('y1', { target: document.querySelector('#profile-era-tabs-global .profile-era-tab') });
+  initHomeGallery();
+  if (typeof initHmg === 'function') initHmg();
+}
+
+loadSiteData();
 
 // 창 크기 변경 시 칩스/통계 위치 재체크
 window.addEventListener('resize', () => {

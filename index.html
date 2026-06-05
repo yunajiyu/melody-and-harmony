@@ -4988,9 +4988,13 @@ const _SC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 
 async function _scFetch(key) {
   try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
     const r = await fetch(`${_SC_URL}/rest/v1/site_config?key=eq.${key}&select=value`, {
-      headers: { apikey: _SC_KEY, Authorization: `Bearer ${_SC_KEY}` }
+      headers: { apikey: _SC_KEY, Authorization: `Bearer ${_SC_KEY}` },
+      signal: ctrl.signal
     });
+    clearTimeout(t);
     const rows = await r.json();
     return rows?.[0]?.value ?? null;
   } catch(e) { return null; }
@@ -5127,7 +5131,6 @@ async function loadSiteConfig() {
 }
 
 function _reRenderAll() {
-  renderActiveCard();
   buildMiniCards();
   renderHomeProfileCards(homeProfileEra || 'y1');
   const activeEraTab = document.querySelector('#profile-era-tabs-global .profile-era-tab.active');

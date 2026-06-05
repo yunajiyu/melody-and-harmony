@@ -49,6 +49,26 @@
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
   font-weight: normal; font-display: swap;
 }
+@font-face {
+  font-family: 'KerisKedyuche';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-3@1.0/KERISKEDU_R.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'PfStardust30S';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/PFStardustS.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'PfStardust30S';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/PFStardustSBold.woff2') format('woff2');
+  font-weight: 700; font-display: swap;
+}
+@font-face {
+  font-family: 'PfStardust30S';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/PFStardustSExtraBold.woff2') format('woff2');
+  font-weight: 800; font-display: swap;
+}
 :root{
   --bg:#EEF0F3;
   --surface:#FFFFFF;
@@ -159,7 +179,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 
 /* ── CONTENT AREA ── */
-.content{padding:2rem 2.25rem 2.5rem;border-radius:0 var(--r-xl) var(--r-xl) 0}
+.content{padding:3rem 2.25rem 2.5rem;border-radius:0 var(--r-xl) var(--r-xl) 0}
 
 /* ══════════════════════════════════════
    700px 이하 — 가로 탭바로 전환
@@ -209,10 +229,31 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .cards-board{
   display:grid;
   grid-template-columns:148px 1fr 0.5fr;
-  grid-template-rows:auto 220px;
-  gap:16px;
-  margin-bottom:2rem;
+  grid-template-rows:auto 260px;
+  column-gap:16px;
+  row-gap:3rem;
+  margin-bottom:3rem;
   align-items:stretch;
+}
+.home-gallery-section{
+  display:flex;
+  flex-direction:column;
+  overflow:visible;
+  width:100%;
+}
+.home-gallery-section > div{
+  flex:1;
+  height:100%;
+}
+/* row2 TV+달력: TV 60%, 달력 40% */
+.home-card-bottom-row{
+  display:grid;
+  grid-template-columns:minmax(0,60%) minmax(0,1fr);
+  gap:16px;
+  align-items:stretch;
+  overflow:visible;
+  width:100%;
+  min-width:0;
 }
 /* col1 row1: 미니카드 (row1만) */
 .mini-cards-section{
@@ -235,25 +276,19 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   display:flex;
   flex-direction:column;
 }
-/* col1+col2 row2: 갤러리 (미니카드+메인카드 너비 합산 span) */
-.home-gallery-section{
-  grid-column:1 / 3;
-  grid-row:2;
-  display:flex;
-  flex-direction:column;
-}
-.home-gallery-section > div {
-  flex:1;
-  height:100%;
-}
 /* col3 row2: 위젯B */
 .home-widgetb-section{
-  grid-column:3;
+  display:flex;
+  flex-direction:column;
+  width:100%;
+}
+.now-playing-wrap{
+  grid-column:1 / -1;
   grid-row:2;
   display:flex;
   flex-direction:column;
+  padding-top:1.75rem;
 }
-.home-card-bottom{ display:contents; }
 .active-card-wrap{
   perspective:1800px;
   margin-bottom:1.25rem;
@@ -469,7 +504,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .mini-card-num,.mini-card-date,.mini-card-icon{display:none}
 
 /* ── BIG TIMELINE ── */
-.big-tl-wrap{margin-bottom:1rem;position:relative}
+.big-tl-wrap{margin-bottom:2.75rem;position:relative}
 /* 외부: 시각 카드 */
 .big-tl-outer{
   background:var(--surface);border-radius:20px;
@@ -783,10 +818,10 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 }
 /* 전체보기 바둑판: 가로 6열 정사각형 */
 .gallery-grid-full{
-  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px;
 }
 .gallery-grid-full-item{
-  aspect-ratio:1/1;border-radius:8px;overflow:hidden;cursor:pointer;
+  aspect-ratio:1/1;border-radius:10px;overflow:hidden;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   font-size:9px;color:var(--text-soft);transition:opacity 0.15s;
 }
@@ -1225,7 +1260,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 /* ── 항상 표시되는 상단 헤더 ── */
 .global-hero{
-  margin-bottom:1.75rem;
+  margin-bottom:3.5rem;
   padding-bottom:1.25rem;
   border-bottom:1px solid var(--border);
 }
@@ -1368,8 +1403,9 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   .cards-board{
     display:flex !important;
     flex-direction:column !important;
-    gap:10px;
-    margin-bottom:1.25rem;
+    gap:18px;
+    padding-top:0 !important;
+    margin-bottom:0.6rem;
   }
 
   /* 메인 카드: order 0 → 항상 맨 위 */
@@ -1400,41 +1436,9 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     margin-top:0 !important;
   }
 
-  /* 모바일: 카드 하단 갤러리+위젯B → 세로 쌓기 */
-  .home-card-bottom{
-    grid-template-columns:1fr !important;
-    gap:10px !important;
-  }
-  .home-gallery-section{
-    grid-column:auto !important;
-    grid-row:auto !important;
-    order:1 !important;
-    width:100%;
-    min-height:200px;
-  }
-  .home-gallery-section > div {
-    height:200px;
-  }
-  .home-widget-section{
-    order:3 !important;
-    grid-column:auto !important;
-    grid-row:auto !important;
-    width:100%;
-    height:auto !important;
-    min-height:120px;
-  }
-  .home-widgetb-section{
-    order:2 !important;
-    grid-column:auto !important;
-    grid-row:auto !important;
-    width:100%;
-    height:auto !important;
-    min-height:120px;
-  }
-
-  /* 나머지 카드들: order 2 → 갤러리 아래, 정사각형 한 줄 */
+  /* 미니카드: order 1 */
   .mini-cards-section{
-    order:2 !important;
+    order:1 !important;
     display:flex !important;
     flex-direction:row !important;
     overflow-x:auto;
@@ -1444,6 +1448,56 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     gap:8px;
     width:100%;
     padding:4px 2px;
+  }
+
+  /* 디데이 위젯A: order 2 */
+  .home-widget-section{
+    order:2 !important;
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:100%;
+    height:auto !important;
+    min-height:120px;
+  }
+
+  /* TV+달력 묶음: order 3 */
+  .now-playing-wrap{
+    order:3 !important;
+  }
+  .home-card-bottom-row{
+    grid-column:auto !important;
+    grid-row:auto !important;
+    grid-template-columns:1fr !important;
+    gap:10px;
+    width:100%;
+  }
+  .home-gallery-section{
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:100%;
+    margin:0 !important;
+  }
+  .home-gallery-section > div {
+    height:auto !important;
+  }
+  /* TV 래퍼 높이 모바일 고정 */
+  .home-gallery-section > div > div {
+    height:220px !important;
+    min-height:220px !important;
+  }
+  .home-widgetb-section{
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:100%;
+    height:auto !important;
+    min-height:120px;
+  }
+
+  /* 모바일: 카드 하단 */
+  #page-home > div:first-child{ display:none }
+  .home-card-bottom{
+    grid-template-columns:1fr !important;
+    gap:10px !important;
   }
   .mini-cards-section::-webkit-scrollbar{display:none}
   .mini-cards-grid{
@@ -1747,9 +1801,44 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
      top:14%;left:-8%;animation:aurora-d 8.2s ease-in-out infinite 3.1s}
 .ab5{width:105%;height:32%;background:radial-gradient(ellipse,rgba(150,200,255,0.48) 0%,transparent 70%);
      top:20%;right:-6%;animation:aurora-e 7.0s ease-in-out infinite 1.8s}
+
+/* ── 라이트박스 ── */
+#lightbox{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.85);
+  align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+#lightbox.open{display:flex}
+#lightbox-inner{
+  position:relative;max-width:92vw;max-height:92vh;
+  display:flex;align-items:center;justify-content:center;
+}
+#lightbox-img{
+  max-width:92vw;max-height:88vh;
+  object-fit:contain;border-radius:8px;
+  display:block;cursor:default;
+  box-shadow:0 8px 48px rgba(0,0,0,0.5);
+}
+#lightbox-close{
+  position:absolute;top:-36px;right:0;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,0.15);border:none;
+  color:#fff;font-size:16px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+#lightbox-close:hover{background:rgba(255,255,255,0.3)}
 </style>
 </head>
 <body>
+<!-- 라이트박스 -->
+<div id="lightbox" onclick="closeLightbox()">
+  <div id="lightbox-inner" onclick="event.stopPropagation()">
+    <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+</div>
 <div class="copy-toast" id="copy-toast">copy♥</div>
 <div class="shell">
 <div class="shell-card">
@@ -1789,50 +1878,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       갤러리
     </div>
   </nav>
-  <!-- 기념일 위젯 (4:2.5 비율, 이미지 배경) -->
-  <div id="anniversary-widget" style="
-    position:relative;
-    border-radius:16px;
-    overflow:hidden;
-    aspect-ratio:4/2;
-    flex-shrink:0;
-    box-shadow:0 4px 16px rgba(232,33,103,0.06);
-    border:none;
-    min-height:0;
-    transform-style:preserve-3d;
-    transition:transform 0.1s ease-out;
-    cursor:default;
-  ">
-    <div id="anniv-bg" style="
-      position:absolute;inset:0;
-      background:#FFE5FA;
-      background-size:cover;background-position:center;
-    "></div>
-    <!-- 무지개 글레어 레이어 -->
-    <div id="anniv-glare" style="
-      position:absolute;inset:0;border-radius:16px;
-      pointer-events:none;z-index:10;
-      opacity:0;transition:opacity 0.2s;
-    "></div>
-    <!-- 무지개 오로라 레이어 (5밴드) -->
-    <div class="aurora-band ab1"></div>
-    <div class="aurora-band ab2"></div>
-    <div class="aurora-band ab3"></div>
-    <div class="aurora-band ab4"></div>
-    <div class="aurora-band ab5"></div>
-    <!-- 오버레이 -->
-    <div style="position:absolute;inset:0;background:rgba(255,245,252,0.22)"></div>
-    <!-- 홀로그램 효과 -->
-    <div class="holo-base"></div>
-    <div class="holo-lines"></div>
-    <!-- 흰 파티클 -->
-    <div class="a-spark as1"></div>
-    <div class="a-spark as2"></div>
-    <div class="a-spark as3"></div>
-    <div class="a-spark as4"></div>
-    <div class="a-spark as5"></div>
-    <div style="position:relative;z-index:4;padding:10px 12px;height:100%;width:100%;display:flex;flex-direction:column;justify-content:space-between" id="anniv-list"></div>
-  </div><!-- /anniversary-widget -->
+
 
   <!-- 모바일 전용: D+1 옆 재생버튼 (탭바 내, 데스크탑에서는 숨김) -->
   <div id="mp-mobile-btn" style="display:none;align-items:center;flex-shrink:0;margin-left:5px">
@@ -1855,19 +1901,9 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     display:flex;flex-direction:column;justify-content:space-between;
     min-height:0;border:none;
   ">
-    <!-- 배경 -->
     <div style="position:absolute;inset:0;background:linear-gradient(180deg,#7ec8e8 0%,#aaddf5 55%,#d0f0fc 100%)"></div>
-    <!-- 유리질감 오버레이 -->
-    <div style="position:absolute;inset:0;
-      background:linear-gradient(145deg,rgba(255,255,255,0.32) 0%,rgba(255,255,255,0.06) 50%,rgba(200,235,255,0.18) 100%);
-      backdrop-filter:blur(0.5px);pointer-events:none;z-index:1"></div>
-    <!-- 유리 상단 하이라이트 -->
-    <div style="position:absolute;top:0;left:0;right:0;height:35%;
-      background:linear-gradient(180deg,rgba(255,255,255,0.28) 0%,transparent 100%);
-      pointer-events:none;z-index:1;border-radius:16px 16px 0 0"></div>
-
-    <!-- 무지개 (z-index:2 — 모든 구름 아래) -->
-    <!-- 동일 중심(60,90) 기준, 반지름 차이 6씩 → 간격 균일한 원호 -->
+    <div style="position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,0.32) 0%,rgba(255,255,255,0.06) 50%,rgba(200,235,255,0.18) 100%);backdrop-filter:blur(0.5px);pointer-events:none;z-index:1"></div>
+    <div style="position:absolute;top:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(255,255,255,0.28) 0%,transparent 100%);pointer-events:none;z-index:1;border-radius:16px 16px 0 0"></div>
     <svg id="w-rainbow-svg" viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M 5 88 A 55 55 0 0 1 115 88" stroke="#FFB3BA" stroke-width="3.5" fill="none"/>
       <path d="M 9 88 A 51 51 0 0 1 111 88" stroke="#FFDFB3" stroke-width="3.5" fill="none"/>
@@ -1876,24 +1912,18 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <path d="M21 88 A 39 39 0 0 1  99 88" stroke="#B3DCF0" stroke-width="3.5" fill="none"/>
       <path d="M25 88 A 35 35 0 0 1  95 88" stroke="#C8B3F0" stroke-width="3.5" fill="none"/>
     </svg>
-
-    <!-- 작은 구름 A (z-index:4) — 크기 키움 -->
     <div class="wcl-a" style="position:absolute;pointer-events:none;z-index:4;top:8%;right:6%">
       <div style="position:relative;width:44px;height:13px;background:rgba(255,255,255,0.95);border-radius:40px">
         <div style="position:absolute;width:22px;height:22px;background:rgba(255,255,255,0.95);border-radius:50%;top:-13px;left:5px"></div>
         <div style="position:absolute;width:16px;height:16px;background:rgba(255,255,255,0.95);border-radius:50%;top:-9px;left:22px"></div>
       </div>
     </div>
-
-    <!-- 작은 구름 B (z-index:4) — 크기 키움 -->
     <div class="wcl-b" style="position:absolute;pointer-events:none;z-index:4;top:34%;right:24%">
       <div style="position:relative;width:32px;height:10px;background:rgba(255,255,255,0.88);border-radius:40px">
         <div style="position:absolute;width:15px;height:15px;background:rgba(255,255,255,0.88);border-radius:50%;top:-9px;left:4px"></div>
         <div style="position:absolute;width:11px;height:11px;background:rgba(255,255,255,0.88);border-radius:50%;top:-6px;left:16px"></div>
       </div>
     </div>
-
-    <!-- 큰 구름 (z-index:5 — 무지개 시작점 덮음) -->
     <svg style="position:absolute;pointer-events:none;z-index:5;bottom:-22%;left:-10%;width:62%;height:auto" viewBox="0 0 120 70" fill="none">
       <ellipse cx="60" cy="58" rx="58" ry="18" fill="rgba(255,255,255,0.97)"/>
       <circle cx="28" cy="46" r="22" fill="rgba(255,255,255,0.97)"/>
@@ -1901,20 +1931,10 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <circle cx="82" cy="46" r="19" fill="rgba(255,255,255,0.97)"/>
       <circle cx="100" cy="52" r="14" fill="rgba(255,255,255,0.97)"/>
     </svg>
-
-    <!-- 반짝이 10개 (z-index:3) -->
-    <div class="w-spark ws1"></div>
-    <div class="w-spark ws2"></div>
-    <div class="w-spark ws3"></div>
-    <div class="w-spark ws4"></div>
-    <div class="w-spark ws5"></div>
-    <div class="w-spark ws6"></div>
-    <div class="w-spark ws7"></div>
-    <div class="w-spark ws8"></div>
-    <div class="w-spark ws9"></div>
+    <div class="w-spark ws1"></div><div class="w-spark ws2"></div><div class="w-spark ws3"></div>
+    <div class="w-spark ws4"></div><div class="w-spark ws5"></div><div class="w-spark ws6"></div>
+    <div class="w-spark ws7"></div><div class="w-spark ws8"></div><div class="w-spark ws9"></div>
     <div class="w-spark ws10"></div>
-
-    <!-- 콘텐츠 -->
     <div id="weather-label" style="position:relative;z-index:6;font-size:10px;font-weight:700;color:rgba(30,80,130,0.6);letter-spacing:0.06em;text-transform:uppercase">날씨</div>
     <div style="position:relative;z-index:6;display:flex;align-items:center;gap:8px;flex:1;padding-top:6px">
       <div id="weather-icon" style="font-size:26px;line-height:1;flex-shrink:0">🌤</div>
@@ -1938,7 +1958,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 <main class="content">
 
 <!-- ── 항상 표시되는 헤더 ── -->
-<div class="global-hero" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+<div class="global-hero" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:1.5rem">
   <div>
     <h1 class="global-hero-title">하모니 아카이브</h1>
     <p class="global-hero-sub">정수환 <span class="heart">♥</span> 최시몬</p>
@@ -2047,7 +2067,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
     <!-- 트랙 정보 + 진행바 -->
     <div style="flex:1;min-width:0;position:relative;z-index:1">
-      <div id="mp-title" style="font-size:11px;font-weight:700;color:#7a1040;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">—</div>
+      <div id="mp-title" style="font-size:11px;font-weight:700;color:#7a1040;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;font-family:'PfStardust30S',monospace">—</div>
       <div id="mp-progress-track" onclick="mpSeek(event)" style="height:3px;border-radius:99px;background:rgba(232,33,103,0.15);cursor:pointer;overflow:hidden">
         <div id="mp-progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#FF85C2,#E82167);border-radius:99px;transition:width 0.3s linear"></div>
       </div>
@@ -2077,7 +2097,9 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 <!-- ════════════════════════════════════════
      HOME PAGE
 ════════════════════════════════════════ -->
-<div id="page-home" class="page active">
+<div id="page-home" class="page active" style="display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:0.2rem;flex-shrink:0"></div>
 
   <!-- ── CARDS BOARD ── -->
   <div class="cards-board">
@@ -2097,34 +2119,165 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
       <div class="active-stats" id="active-stats"></div>
     </div>
 
-    <!-- col3 row1: 위젯A -->
+    <!-- col3 row1: 디데이 위젯 -->
     <div class="home-widget-section">
-      <div id="home-side-widget" style="flex:1;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;height:100%">
-        <span style="font-size:11px;color:var(--text-faint)">위젯 A</span>
+      <div id="dday-widget" style="
+        flex:1;border-radius:16px;overflow:hidden;
+        position:relative;height:100%;min-height:160px;
+        background:#f0e8df;
+      ">
+        <!-- 배경 이미지 -->
+        <div id="dday-bg" style="
+          position:absolute;inset:0;
+          background-size:cover;background-position:center;
+          background-color:#f0e8df;
+        "></div>
+        <!-- 어두운 오버레이 -->
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.18) 0%,rgba(0,0,0,0.32) 100%);z-index:1"></div>
+        <!-- 모서리 이너 페이드 -->
+        <div style="position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 40px 18px rgba(255,255,255,0.35)"></div>
+        <!-- 별 점멸 레이어 -->
+        <div id="dday-twinkle" style="position:absolute;inset:0;z-index:2;pointer-events:none"></div>
+        <!-- 오른쪽 상단: 날짜 -->
+        <div style="
+          position:absolute;top:14px;right:16px;z-index:3;
+          font-family:'KerisKedyuche',sans-serif;font-weight:400;
+          font-size:11px;color:rgba(255,255,255,0.82);
+          letter-spacing:0.04em;
+        ">2026.05.04</div>
+        <!-- 왼쪽 하단: D+ 숫자 + 하트 -->
+        <div style="
+          position:absolute;bottom:16px;left:18px;z-index:3;
+          display:flex;flex-direction:column;gap:2px;
+        ">
+          <div style="
+            font-family:'KerisKedyuche',sans-serif;font-weight:400;
+            font-size:13px;color:rgba(255,255,255,0.75);
+            letter-spacing:0.06em;line-height:1;
+          ">D +</div>
+          <div style="
+            font-family:'KerisKedyuche',sans-serif;font-weight:400;
+            font-size:clamp(32px,4vw,48px);color:#fff;
+            letter-spacing:-0.02em;line-height:1;
+            text-shadow:0 2px 12px rgba(0,0,0,0.25);
+            display:flex;align-items:flex-end;gap:6px;
+          ">
+            <span id="dday-count">—</span>
+            <span style="font-size:0.55em;margin-bottom:4px;opacity:0.85">♥</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- col1+col2 row2: 갤러리 (미니카드+메인카드 너비 합산) -->
+    <!-- row2: NOW PLAYING 제목 + TV + 달력 -->
+    <div class="now-playing-wrap">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem">
+        <span style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.02em">NOW PLAYING</span>
+        <span style="font-size:14px;color:var(--text-faint)">···</span>
+      </div>
+      <div class="home-card-bottom-row">
+
+    <!-- TV 갤러리 -->
     <div class="home-gallery-section">
-      <div style="position:relative;width:100%;height:100%;min-height:180px;border-radius:14px;overflow:hidden;background:var(--bg);border:1px solid var(--border)">
-        <div id="home-mini-gallery-col" style="position:absolute;inset:0">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.25);z-index:10">
-            <div id="hmg-progress-fill" style="height:100%;width:0%;background:rgba(255,255,255,0.85);border-radius:3px;transition:none"></div>
+      <!-- 레트로 TV 프레임 -->
+      <div style="position:relative;width:100%;height:100%;min-height:180px;display:flex;align-items:flex-start;justify-content:flex-start;">
+
+        <!-- TV 본체 -->
+        <div style="
+          position:relative;width:100%;height:100%;
+          background:#f9a8c4;
+          border-radius:18px;
+          box-shadow:
+            inset 0 3px 10px rgba(255,255,255,0.5),
+            inset 0 -4px 10px rgba(200,80,120,0.2),
+            0 6px 24px rgba(200,100,140,0.2);
+          display:flex;flex-direction:row;
+          padding:10px 10px 28px 10px;
+          box-sizing:border-box;
+          overflow:visible;
+          z-index:1;
+          margin-bottom:10px;
+        ">
+          <!-- 외곽 테두리 라인 -->
+          <div style="position:absolute;inset:5px;border-radius:14px;border:2px solid rgba(220,80,130,0.35);pointer-events:none;z-index:20"></div>
+
+          <!-- 다리 (본체 기준 하단 고정) -->
+          <div style="position:absolute;bottom:-10px;left:14px;z-index:-1;pointer-events:none;">
+            <div style="width:14px;height:12px;background:#e87aa8;border-radius:0 0 5px 5px;transform:rotate(6deg);transform-origin:top center;"></div>
           </div>
-          <div id="hmg-slide" style="width:100%;height:100%;cursor:grab;transition:opacity 0.3s;user-select:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb;background:var(--bg)">이미지</div>
-          <div onclick="hmgSlide(-1)" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:26px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 6px rgba(0,0,0,0.4);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">‹</div>
-          <div onclick="hmgSlide(1)"  style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:26px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 6px rgba(0,0,0,0.4);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">›</div>
-          <div id="hmg-pause-btn" onclick="hmgTogglePause()" style="position:absolute;top:10px;right:14px;cursor:pointer;font-size:10px;color:rgba(255,255,255,0.85);text-shadow:0 1px 4px rgba(0,0,0,0.35);z-index:10;user-select:none">⏸</div>
-        </div>
+          <div style="position:absolute;bottom:-10px;right:14px;z-index:-1;pointer-events:none;">
+            <div style="width:14px;height:12px;background:#e87aa8;border-radius:0 0 5px 5px;transform:rotate(-6deg);transform-origin:top center;"></div>
+          </div>
+
+          <!-- 화면 좌측 클릭 영역 (이전) -->
+          <div onclick="hmgSlide(-1)" style="position:absolute;left:0;top:0;width:30%;height:calc(100% - 28px);z-index:15;cursor:w-resize;border-radius:12px 0 0 12px"></div>
+          <!-- 화면 우측 클릭 영역 (다음) — 오른쪽 패널 제외 -->
+          <div onclick="hmgSlide(1)" style="position:absolute;left:30%;top:0;width:calc(70% - 42px);height:calc(100% - 28px);z-index:15;cursor:e-resize;border-radius:0 12px 12px 0"></div>
+
+          <!-- 화면 영역 -->
+          <div style="
+            flex:1;position:relative;
+            background:#fff;
+            border-radius:12px;
+            border:3px solid #e87aa8;
+            box-shadow:inset 0 0 12px rgba(200,80,120,0.12);
+            overflow:hidden;
+            min-width:0;
+            pointer-events:none;
+          ">
+            <div id="home-mini-gallery-col" style="position:absolute;inset:0;border-radius:9px;overflow:hidden;background:#f5f0f2">
+              <div id="hmg-slide" style="width:100%;height:100%;transition:opacity 0.3s;user-select:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb;background:#f5f0f2">이미지</div>
+            </div>
+          </div>
+
+          <!-- 오른쪽 패널 -->
+          <div style="width:32px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 0 4px;margin-left:8px;z-index:16">
+            <div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(255,255,255,0.7),#f082aa 60%,#d85a90);box-shadow:0 2px 6px rgba(180,60,100,0.3),inset 0 1px 3px rgba(255,255,255,0.6);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;" onclick="hmgSlide(-1)">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="7,1 3,5 7,9" stroke="rgba(255,255,255,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(255,255,255,0.7),#f082aa 60%,#d85a90);box-shadow:0 2px 6px rgba(180,60,100,0.3),inset 0 1px 3px rgba(255,255,255,0.6);cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;" onclick="hmgSlide(1)">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="3,1 7,5 3,9" stroke="rgba(255,255,255,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;width:18px;margin-top:2px">
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+              <div style="height:2px;border-radius:1px;background:rgba(240,140,180,0.6)"></div>
+            </div>
+          </div>
+
+        </div><!-- /TV 본체 -->
       </div>
     </div>
 
     <!-- col3 row2: 위젯B -->
     <div class="home-widgetb-section">
-      <div id="home-side-widget-b" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;width:100%;height:100%">
-        <span style="font-size:10px;color:var(--text-faint)">위젯 B</span>
+      <div id="cal-widget" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);width:100%;height:100%;display:flex;flex-direction:column;padding:14px;overflow:hidden;box-sizing:border-box;min-width:0">
+        <!-- 달력 헤더 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <button onclick="calMove(-1)" style="background:none;border:none;cursor:pointer;color:var(--text-soft);font-size:16px;padding:2px 4px;line-height:1">‹</button>
+          <div id="cal-month-label" style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.04em"></div>
+          <button onclick="calMove(1)" style="background:none;border:none;cursor:pointer;color:var(--text-soft);font-size:16px;padding:2px 4px;line-height:1">›</button>
+        </div>
+        <!-- 요일 -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px">
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">S</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">M</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">T</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">W</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">T</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">F</div>
+          <div style="font-size:11px;color:var(--text-faint);font-weight:500">S</div>
+        </div>
+        <!-- 날짜 그리드 (하단 정렬) -->
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;flex:1;align-content:end;gap:2px"></div>
       </div>
-    </div>
+    </div><!-- /home-widgetb-section -->
+
+    </div><!-- /home-card-bottom-row -->
+    </div><!-- /NOW PLAYING wrap -->
 
   </div><!-- /cards-board -->
 
@@ -3109,91 +3262,152 @@ function mpFadeOutAndNext(){
 }
 
 // ════════════════════════════
-// 기념일 위젯
+// 디데이 위젯
 // ════════════════════════════
-function renderAnniversary(){
+(function(){
+  const START = new Date('2026-05-04T00:00:00+09:00');
+  function calcDday() {
+    const now  = new Date();
+    const diff = Math.floor((now - START) / (1000 * 60 * 60 * 24));
+    document.getElementById('dday-count').textContent = diff >= 0 ? diff : '—';
+  }
+  calcDday();
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msToMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1) - now;
+  setTimeout(() => { calcDday(); setInterval(calcDday, 86400000); }, msToMidnight);
 
-  // 기념일: 2026/05/04 ♥ 고정 표시
-  const TARGET = { year:2026, month:5, day:4 };
-  const target = new Date(TARGET.year, TARGET.month-1, TARGET.day);
-  const diff = Math.round((target - today)/(1000*60*60*24));
-  const dateStr = `${TARGET.year}/${String(TARGET.month).padStart(2,'0')}/${String(TARGET.day).padStart(2,'0')} ♥`;
-
-  const list = document.getElementById('anniv-list');
-  if(!list) return;
-
-  const dNum = diff < 0 ? `${Math.abs(diff)}` : diff === 0 ? '0' : `${diff}`;
-  const prefix = diff < 0 ? 'D +' : diff === 0 ? 'D' : 'D -';
-
-  list.innerHTML = `
-    <div class="anniv-date-label" style="font-size:10px;color:#E82167;font-weight:400;letter-spacing:0.03em;align-self:flex-start">${dateStr}</div>
-    <div style="display:flex;align-items:center;gap:4px;line-height:1;justify-content:center;flex:1;align-self:stretch">
-      <span style="font-size:20px;line-height:1;color:#E82167">&#9829;</span>
-      <span class="anniv-prefix" style="font-size:26px;font-weight:400;color:#E82167;letter-spacing:-0.02em">${prefix.replace(' ','')}</span><span class="anniv-num" style="font-size:26px;font-weight:400;color:#E82167;letter-spacing:-0.02em">${dNum}</span>
-    </div>`;
-  list.style.justifyContent = 'space-between';
-}
-renderAnniversary();
-
-// 기념일 위젯 틸트 + 무지개 글레어 (메인카드 동일 로직)
-(function(){
-  const el    = document.getElementById('anniversary-widget');
-  const glare = document.getElementById('anniv-glare');
-  if(!el || !glare) return;
-  el.addEventListener('mousemove', e => {
-    const r  = el.getBoundingClientRect();
-    const nx = (e.clientX - r.left) / r.width;
-    const ny = (e.clientY - r.top)  / r.height;
-    const rx = (ny - 0.5) * -10;
-    const ry = (nx - 0.5) *  10;
-    el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
-    // 메인카드와 동일한 무지개 글레어
-    const px  = Math.round(nx * 100);
-    const py  = Math.round(ny * 100);
-    const hue = Math.round(nx * 300);
-    const w   = r.width, h = r.height;
-    const rx1 = Math.round(w * (0.28 + Math.sin(nx * 4) * 0.08));
-    const ry1 = Math.round(h * (0.32 + Math.cos(ny * 3) * 0.07));
-    const rx2 = Math.round(w * (0.18 + Math.cos(nx * 5) * 0.06));
-    const ry2 = Math.round(h * (0.22 + Math.sin(ny * 4) * 0.05));
-    const off = 14;
-    glare.style.opacity = '1';
-    glare.style.background = `
-      radial-gradient(ellipse ${rx1}px ${ry1}px at ${px}% ${py}%,
-        hsla(${hue},100%,68%,0.09) 0%, transparent 100%),
-      radial-gradient(ellipse ${rx2}px ${ry2}px at ${Math.min(99,px+off)}% ${Math.max(1,py-off)}%,
-        hsla(${hue+90},100%,68%,0.07) 0%, transparent 100%),
-      radial-gradient(ellipse ${rx2}px ${ry2}px at ${Math.max(1,px-off)}% ${Math.min(99,py+off)}%,
-        hsla(${hue+200},100%,68%,0.07) 0%, transparent 100%)
+  // 별 점멸 이펙트
+  const layer = document.getElementById('dday-twinkle');
+  if (layer) {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes dday-twinkle {
+        0%,100%{opacity:0;transform:scale(.4)}
+        50%{opacity:1;transform:scale(1)}
+      }
+      .dday-star {
+        position:absolute;
+        border-radius:50%;
+        background:rgba(255,255,255,0.92);
+        animation:dday-twinkle var(--d) ease-in-out var(--delay) infinite;
+      }
     `;
-  });
-  el.addEventListener('mouseleave', () => {
-    el.style.transform = '';
-    glare.style.opacity = '0';
-  });
-})();
+    document.head.appendChild(style);
 
-// 기념일 위젯 — 너비가 좁아지면 날짜 레이블 숨김
-(function(){
-  const widget = document.getElementById('anniversary-widget');
-  if(!widget) return;
-  const observer = new ResizeObserver(entries => {
-    for(const entry of entries){
-      const w = entry.contentRect.width;
-      const label = widget.querySelector('.anniv-date-label');
-      if(!label) return;
-      // 150px 이하면 날짜 숨김
-      label.style.display = w < 150 ? 'none' : '';
+    const rnd = (a,b) => Math.random()*(b-a)+a;
+    for (let i = 0; i < 28; i++) {
+      const s = document.createElement('div');
+      s.className = 'dday-star';
+      const sz = rnd(1.5, 4);
+      s.style.cssText = `
+        width:${sz}px;height:${sz}px;
+        left:${rnd(3,97)}%;top:${rnd(5,90)}%;
+        --d:${rnd(1.2,3.2)}s;
+        --delay:-${rnd(0,3.2)}s;
+      `;
+      layer.appendChild(s);
     }
-  });
-  observer.observe(widget);
+  }
 })();
 
 // ════════════════════════════
-// 미니 플레이어 반짝이 효과
+// 라이트박스
 // ════════════════════════════
+function openLightbox(url) {
+  if (!url) return;
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  img.src = url;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+
+
+// ════════════════════════════
+// 달력 위젯
+// ════════════════════════════
+(function(){
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let cur = new Date();
+  let cy = cur.getFullYear(), cm = cur.getMonth();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // 기념일 목록 (YYYY-MM-DD)
+  let ANNIVERSARIES = ['2026-05-06'];
+
+  function isAnniv(y, m, d) {
+    const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    return ANNIVERSARIES.includes(key);
+  }
+
+  function render(){
+    document.getElementById('cal-month-label').textContent = `${MONTHS[cm]} ${cy}`;
+    const grid = document.getElementById('cal-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const first = new Date(cy, cm, 1).getDay();
+    const last  = new Date(cy, cm+1, 0).getDate();
+    const prevLast = new Date(cy, cm, 0).getDate();
+
+    // 이전달 빈칸
+    for (let i = 0; i < first; i++) {
+      const d = document.createElement('div');
+      d.textContent = prevLast - first + 1 + i;
+      d.style.cssText = 'font-size:12px;color:var(--text-faint);padding:4px 0;';
+      grid.appendChild(d);
+    }
+    // 이번달
+    for (let i = 1; i <= last; i++) {
+      const d = document.createElement('div');
+      const isToday = cy === today.getFullYear() && cm === today.getMonth() && i === today.getDate();
+      const anniv = isAnniv(cy, cm, i);
+      if (isToday) {
+        d.style.cssText = 'font-size:12px;font-weight:600;color:#fff;background:#e82167;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:2px auto;position:relative;';
+        d.textContent = i;
+      } else if (anniv) {
+        d.style.cssText = 'font-size:12px;color:#e82167;font-weight:600;padding:4px 0;position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;';
+        d.innerHTML = `<span>${i}</span><span style="width:4px;height:4px;border-radius:50%;background:#e82167;display:block"></span>`;
+      } else {
+        d.style.cssText = 'font-size:12px;color:var(--text-soft);padding:4px 0;';
+        d.textContent = i;
+      }
+      grid.appendChild(d);
+    }
+    // 다음달 빈칸
+    const remain = 7 - ((first + last) % 7);
+    if (remain < 7) {
+      for (let i = 1; i <= remain; i++) {
+        const d = document.createElement('div');
+        d.textContent = i;
+        d.style.cssText = 'font-size:12px;color:var(--text-faint);padding:4px 0;';
+        grid.appendChild(d);
+      }
+    }
+  }
+
+  window.calMove = function(dir) {
+    cm += dir;
+    if (cm > 11) { cm = 0; cy++; }
+    if (cm < 0)  { cm = 11; cy--; }
+    render();
+  };
+
+  // DB에서 기념일 로드
+  window._calSetAnniversaries = function(list) {
+    if (Array.isArray(list)) ANNIVERSARIES = list;
+    render();
+  };
+
+  render();
+})();
+
+
 
 
 function mpSyncNoteDance(){
@@ -4102,7 +4316,7 @@ function buildProfileGallery() {
   const mainEl = document.getElementById('unified-gallery-main');
   if (!mainEl) return;
   mainEl.innerHTML =
-    `<div style="width:100%;height:100%;background:${imgs[idx].c};display:flex;align-items:center;justify-content:center;font-size:13px;color:#aaa;border-radius:12px">${imgs[idx].lbl}</div>`;
+    `<div style="width:100%;height:100%;background:${imgs[idx].c};display:flex;align-items:center;justify-content:center;font-size:13px;color:#aaa;border-radius:12px;cursor:${imgs[idx].url?'zoom-in':'default'}" onclick="${imgs[idx].url?`openLightbox('${imgs[idx].url}')`:''}">${imgs[idx].lbl}</div>`;
   const fillEl = document.getElementById('gp-fill-single');
   if (fillEl) { fillEl.style.transition = 'none'; fillEl.style.width = '0%'; }
   const thumbsEl = document.getElementById('unified-gallery-thumbs');
@@ -4228,7 +4442,7 @@ function showHomeGallerySlide() {
   slideEl.style.opacity = '0';
   setTimeout(() => {
     if (img.url) {
-      slideEl.innerHTML = `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover">`;
+      slideEl.innerHTML = `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" onclick="openLightbox('${img.url}')">`;
     } else {
       slideEl.innerHTML = `<div style="width:100%;height:100%;background:${img.c};display:flex;align-items:center;justify-content:center;font-size:11px;color:#aaa">${img.lbl}</div>`;
     }
@@ -4281,55 +4495,26 @@ function initHomeGallery() {
 // 홈 미니 갤러리 캐러셀
 // ════════════════════════════
 (function(){
-  let hmgFlat  = [];
-  let hmgIdx   = 0;
-  let hmgPaused = false;
-  let hmgTimer  = null;
-  const HMG_DUR = 3000;
-
-  function hmgProgressStart() {
-    const fill = document.getElementById('hmg-progress-fill');
-    if (!fill) return;
-    fill.style.transition = 'none'; fill.style.width = '0%';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      fill.style.transition = `width ${HMG_DUR}ms linear`;
-      fill.style.width = '100%';
-    }));
-  }
+  let hmgFlat = [];
+  let hmgIdx  = 0;
 
   function hmgRender() {
     if (!hmgFlat.length) return;
-    const img = hmgFlat[hmgIdx];
+    const img   = hmgFlat[hmgIdx];
     const slide = document.getElementById('hmg-slide');
     if (!slide) return;
     slide.style.opacity = '0';
     setTimeout(() => {
       slide.style.background = img.c;
       slide.innerHTML = img.url
-        ? `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover">`
+        ? `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" onclick="openLightbox('${img.url}')">`
         : `<div style="font-size:12px;color:#bbb">${img.lbl}</div>`;
       slide.style.opacity = '1';
     }, 200);
-
-    if (!hmgPaused) hmgProgressStart();
-  }
-
-  function hmgAutoNext() {
-    clearTimeout(hmgTimer);
-    if (hmgPaused) return;
-    hmgTimer = setTimeout(() => {
-      hmgIdx = (hmgIdx + 1) % hmgFlat.length;
-      hmgRender(); hmgAutoNext();
-    }, HMG_DUR);
   }
 
   function hmgBuildFlat() {
-    const all = HOME_MINI_GALLERY.map(img => ({...img}));
-    for (let i = all.length-1; i > 0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      [all[i],all[j]] = [all[j],all[i]];
-    }
-    return all;
+    return HOME_MINI_GALLERY.map(img => ({...img}));
   }
 
   function initHmgDrag(el) {
@@ -4343,23 +4528,17 @@ function initHomeGallery() {
   }
 
   window.hmgSlide = function(dir) {
+    if (!hmgFlat.length) return;
     hmgIdx = (hmgIdx + dir + hmgFlat.length) % hmgFlat.length;
-    hmgRender(); clearTimeout(hmgTimer); if (!hmgPaused) hmgAutoNext();
+    hmgRender();
   };
   window.hmgJump = function(i) {
-    hmgIdx = i; hmgRender(); clearTimeout(hmgTimer); if (!hmgPaused) hmgAutoNext();
-  };
-  window.hmgTogglePause = function() {
-    hmgPaused = !hmgPaused;
-    const btn = document.getElementById('hmg-pause-btn');
-    if (btn) btn.textContent = hmgPaused ? '▶' : '⏸';
-    if (!hmgPaused) { hmgProgressStart(); hmgAutoNext(); }
-    else { clearTimeout(hmgTimer); }
+    hmgIdx = i; hmgRender();
   };
   window.initHmg = function() {
     hmgFlat = hmgBuildFlat();
-    hmgIdx  = 0; hmgPaused = false;
-    hmgRender(); hmgAutoNext();
+    hmgIdx  = 0;
+    hmgRender();
     const slide = document.getElementById('hmg-slide');
     if (slide) initHmgDrag(slide);
   };
@@ -4593,7 +4772,7 @@ async function loadSiteConfig() {
                  'joint_tl','eras_meta','gallery_tab','home_mini_gallery',
                  'profile_gallery','album_data',
                  'eps_data','ep_overview','era_stats',
-                 'eras_nodes','big_tl_nodes','mini_tl'];
+                 'eras_nodes','big_tl_nodes','mini_tl','anniversaries','dday_bg_url'];
   const results = await Promise.all(keys.map(k => _scFetch(k)));
   const cfg = {};
   keys.forEach((k,i) => { if (results[i] !== null) cfg[k] = results[i]; });
@@ -4695,6 +4874,17 @@ async function loadSiteConfig() {
   }
 
   // 데이터 적용 후 UI 재렌더
+  // anniversaries 적용
+  if (cfg.anniversaries && typeof window._calSetAnniversaries === 'function') {
+    window._calSetAnniversaries(cfg.anniversaries);
+  }
+
+  // dday_bg_url 적용
+  if (cfg.dday_bg_url) {
+    const bg = document.getElementById('dday-bg');
+    if (bg) bg.style.backgroundImage = `url('${cfg.dday_bg_url}')`;
+  }
+
   _reRenderAll();
 }
 

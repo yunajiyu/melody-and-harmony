@@ -2238,6 +2238,14 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
           ">
             <div id="home-mini-gallery-col" style="position:absolute;inset:0;border-radius:9px;overflow:hidden;background:#f5f0f2">
               <div id="hmg-slide" style="width:100%;height:100%;transition:opacity 0.3s;user-select:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb;background:#f5f0f2">이미지</div>
+              <!-- 상하좌우 화이트 페이드 -->
+              <div style="position:absolute;inset:0;pointer-events:none;border-radius:9px;
+                background:
+                  linear-gradient(to bottom, rgba(255,255,255,0.32) 0%, transparent 22%, transparent 78%, rgba(255,255,255,0.32) 100%),
+                  linear-gradient(to right,  rgba(255,255,255,0.22) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.22) 100%);
+                z-index:2;"></div>
+              <!-- 반짝 파티클 레이어 -->
+              <div id="hmg-sparkle-wrap" style="position:absolute;inset:0;pointer-events:none;z-index:3;border-radius:9px;overflow:hidden"></div>
             </div>
           </div>
 
@@ -2271,15 +2279,17 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
     <!-- col3 row2: 위젯B -->
     <div class="home-widgetb-section">
-      <div id="cal-widget" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);width:100%;height:100%;display:flex;flex-direction:column;padding:14px;overflow:hidden;box-sizing:border-box;min-width:0">
+      <div id="cal-widget" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);width:100%;height:100%;display:flex;flex-direction:column;padding:14px;overflow:hidden;box-sizing:border-box;min-width:0;position:relative;">
+        <!-- 달력 배경 이미지 -->
+        <div id="cal-bg" style="position:absolute;inset:0;border-radius:14px;background-size:cover;background-position:center;opacity:0;transition:opacity 0.4s;pointer-events:none;z-index:0"></div>
         <!-- 달력 헤더 -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative;z-index:1">
           <button onclick="calMove(-1)" style="background:none;border:none;cursor:pointer;color:var(--text-soft);font-size:16px;padding:2px 4px;line-height:1">‹</button>
           <div id="cal-month-label" style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.04em"></div>
           <button onclick="calMove(1)" style="background:none;border:none;cursor:pointer;color:var(--text-soft);font-size:16px;padding:2px 4px;line-height:1">›</button>
         </div>
         <!-- 요일 -->
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px;position:relative;z-index:1">
           <div style="font-size:11px;color:var(--text-faint);font-weight:500">S</div>
           <div style="font-size:11px;color:var(--text-faint);font-weight:500">M</div>
           <div style="font-size:11px;color:var(--text-faint);font-weight:500">T</div>
@@ -2289,7 +2299,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
           <div style="font-size:11px;color:var(--text-faint);font-weight:500">S</div>
         </div>
         <!-- 날짜 그리드 (하단 정렬) -->
-        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;flex:1;align-content:end;gap:2px"></div>
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;flex:1;align-content:end;gap:2px;position:relative;z-index:1"></div>
       </div>
     </div><!-- /home-widgetb-section -->
 
@@ -3361,10 +3371,11 @@ function mpFadeOutAndNext(){
     function drawMeteors() {
       const w = meteor_canvas.width, h = meteor_canvas.height;
       mCtx.clearRect(0, 0, w, h);
-      // 새 별똥별 랜덤 생성
+      // 새 별똥별 — 더 자주, 더 많이
       mFrame++;
-      if (mFrame % 90 === 0 && Math.random() < 0.7) spawnMeteor();
-      if (mFrame % 180 === 0 && Math.random() < 0.4) spawnMeteor();
+      if (mFrame % 45 === 0 && Math.random() < 0.85) spawnMeteor();
+      if (mFrame % 70 === 0 && Math.random() < 0.7)  spawnMeteor();
+      if (mFrame % 120 === 0 && Math.random() < 0.5) spawnMeteor();
 
       for (let i = meteors.length - 1; i >= 0; i--) {
         const m = meteors[i];
@@ -3390,9 +3401,11 @@ function mpFadeOutAndNext(){
       }
       requestAnimationFrame(drawMeteors);
     }
-    // 첫 별똥별 약간 딜레이 후 시작
-    setTimeout(spawnMeteor, 800);
-    setTimeout(spawnMeteor, 2200);
+    // 첫 별똥별 — 여러 개 순차 등장
+    setTimeout(spawnMeteor, 500);
+    setTimeout(spawnMeteor, 1200);
+    setTimeout(spawnMeteor, 2000);
+    setTimeout(spawnMeteor, 3100);
     drawMeteors();
   }
 })();
@@ -4676,7 +4689,88 @@ function initHomeGallery() {
     const slide = document.getElementById('hmg-slide');
     if (slide) initHmgDrag(slide);
     hmgAutoStart();
+    initHmgSparkles();
   };
+
+  function initHmgSparkles() {
+    const wrap = document.getElementById('hmg-sparkle-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes hmg-twinkle {
+        0%   { opacity:0; transform:scale(0) rotate(0deg) }
+        25%  { opacity:1; transform:scale(1.1) rotate(15deg) }
+        50%  { opacity:0.85; transform:scale(0.85) rotate(0deg) }
+        75%  { opacity:1; transform:scale(1.05) rotate(-10deg) }
+        100% { opacity:0; transform:scale(0) rotate(20deg) }
+      }
+    `;
+    document.head.appendChild(style);
+    const rnd = (a,b) => Math.random()*(b-a)+a;
+
+    // SVG 4갈래 별 반짝이 생성 함수
+    function makeStar(sz, color) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('width', sz);
+      svg.setAttribute('height', sz);
+      svg.setAttribute('viewBox', '-1 -1 2 2');
+      svg.style.cssText = 'overflow:visible;display:block;';
+      // 4갈래 뾰족별 path
+      const r1 = 1, r2 = 0.22;
+      const pts = [];
+      for (let k = 0; k < 8; k++) {
+        const ang = (k * Math.PI) / 4 - Math.PI / 2;
+        const r   = k % 2 === 0 ? r1 : r2;
+        pts.push(`${(Math.cos(ang)*r).toFixed(3)},${(Math.sin(ang)*r).toFixed(3)}`);
+      }
+      const path = document.createElementNS(ns, 'polygon');
+      path.setAttribute('points', pts.join(' '));
+      path.setAttribute('fill', color);
+      // 글로우 필터
+      const filtId = 'hgf' + Math.random().toString(36).slice(2,6);
+      const defs = document.createElementNS(ns, 'defs');
+      const filt = document.createElementNS(ns, 'filter');
+      filt.setAttribute('id', filtId);
+      filt.setAttribute('x', '-80%'); filt.setAttribute('y', '-80%');
+      filt.setAttribute('width', '260%'); filt.setAttribute('height', '260%');
+      const blur = document.createElementNS(ns, 'feGaussianBlur');
+      blur.setAttribute('stdDeviation', '0.3');
+      blur.setAttribute('result', 'b');
+      const merge = document.createElementNS(ns, 'feMerge');
+      ['b','SourceGraphic'].forEach(v => {
+        const mn = document.createElementNS(ns, 'feMergeNode');
+        if (v === 'b') mn.setAttribute('in', v);
+        merge.appendChild(mn);
+      });
+      filt.appendChild(blur); filt.appendChild(merge);
+      defs.appendChild(filt);
+      path.setAttribute('filter', `url(#${filtId})`);
+      svg.appendChild(defs); svg.appendChild(path);
+      return svg;
+    }
+
+    // 별 파티클 배치
+    const configs = [
+      {sz:14, col:'rgba(255,255,255,0.95)', d:2.2, delay:0},
+      {sz:9,  col:'rgba(255,240,250,0.9)',  d:1.8, delay:-0.7},
+      {sz:16, col:'rgba(255,255,255,0.9)',  d:2.8, delay:-1.2},
+      {sz:8,  col:'rgba(255,220,240,0.85)', d:1.6, delay:-0.3},
+      {sz:12, col:'rgba(255,255,255,0.95)', d:2.4, delay:-1.8},
+      {sz:7,  col:'rgba(255,240,248,0.8)',  d:1.5, delay:-2.1},
+      {sz:11, col:'rgba(255,255,255,0.9)',  d:2.0, delay:-0.9},
+      {sz:15, col:'rgba(255,230,245,0.9)',  d:3.0, delay:-1.5},
+      {sz:6,  col:'rgba(255,255,255,0.85)', d:1.4, delay:-2.6},
+      {sz:13, col:'rgba(255,255,255,0.95)', d:2.6, delay:-0.5},
+    ];
+    configs.forEach(cfg => {
+      const wrap2 = document.createElement('div');
+      wrap2.style.cssText = `position:absolute;left:${rnd(5,88)}%;top:${rnd(5,85)}%;width:${cfg.sz}px;height:${cfg.sz}px;animation:hmg-twinkle ${cfg.d}s cubic-bezier(0.4,0,0.2,1) ${cfg.delay}s infinite;`;
+      wrap2.appendChild(makeStar(cfg.sz, cfg.col));
+      wrap.appendChild(wrap2);
+    });
+  }
 })();
 
 // ════════════════════════════
@@ -5023,6 +5117,10 @@ async function loadSiteConfig() {
   if (cfg.dday_bg_url) {
     const bg = document.getElementById('dday-bg');
     if (bg) bg.style.backgroundImage = `url('${cfg.dday_bg_url}')`;
+  }
+  if (cfg.cal_bg_url) {
+    const cb = document.getElementById('cal-bg');
+    if (cb) { cb.style.backgroundImage = `url('${cfg.cal_bg_url}')`; cb.style.opacity = '1'; }
   }
 
   _reRenderAll();

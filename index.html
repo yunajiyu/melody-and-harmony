@@ -2904,7 +2904,6 @@ function resetWrapPaddingTop() {
 
 function buildMiniCards() {
   const grid = document.getElementById('mini-cards-grid');
-  const CARD_IMGS = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
   const others = ERAS.filter(e => e.id !== activeEraId);
   grid.innerHTML = others.map(era => {
     const imgUrl = CARD_IMGS[era.id];
@@ -3802,6 +3801,8 @@ function applyEpFilter(keyword) {
 // ════════════════════════════
 // 홈 프로필 카드 더미 데이터
 // ════════════════════════════
+const CARD_IMGS = { y3:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/3y-main-card.png' };
+
 const HOME_PROFILE = {
   y1: {
     sh: { age:'16세 (1학년)', birthday:'1997.02.01', height:'184cm', mbti:'INTJ', family:'외동 · 부모님', personality:'냉정하고 직설적, 감정 표현이 거의 없다. 자기 페이스를 지키는 것이 핵심 동기. 시몬 앞에서만 미세하게 흔들리기 시작.', keywords:['냉정함','직설적','이과 성향','책벌레','싸가지 없는 듯한 말투'] },
@@ -3827,7 +3828,8 @@ function renderHomeProfileCards(eraId) {
   homeProfileEra = eraId;
   const d = HOME_PROFILE[eraId];
   if (!d) return;
-  document.getElementById('home-profile-label').textContent = ERAS.find(e=>e.id===eraId)?.label + ' 프로필';
+  const labelEl = document.getElementById('home-profile-label');
+  if (labelEl) labelEl.textContent = ERAS.find(e=>e.id===eraId)?.label + ' 프로필';
 
   const makeCard = (char, info, name, en, avatarBg, avatarColor) => `
     <div style="background:#fff;border:0.5px solid #E0DED8;border-radius:12px;padding:1.25rem;position:relative;overflow:hidden">
@@ -3858,11 +3860,13 @@ function renderHomeProfileCards(eraId) {
       </div>
     </div>`;
 
-  document.getElementById('home-profile-cards').innerHTML =
+  const cardsEl = document.getElementById('home-profile-cards');
+  if (cardsEl) cardsEl.innerHTML =
     makeCard('sh', d.sh, '정수환', 'Jeong Suhwan', '#F0E8DF', '#7B5B3A') +
     makeCard('si', d.si, '최시몬', 'Choi Simon',   '#E8E8E8', '#4A4A4A');
 
-  document.getElementById('home-profile-section').style.display = 'block';
+  const sectionEl = document.getElementById('home-profile-section');
+  if (sectionEl) sectionEl.style.display = 'block';
 }
 
 function warpToProfile(targetEra) {
@@ -4807,11 +4811,16 @@ async function loadSiteConfig() {
         if (pi[char].fullbody) Object.assign(FULLBODY_IMGS[char], pi[char].fullbody);
       }
     });
-    if (pi.card) Object.keys(pi.card).forEach(era => { if (pi.card[era]) _CARD_IMGS[era] = pi.card[era]; });
+    if (pi.card) Object.keys(pi.card).forEach(era => { if (pi.card[era]) CARD_IMGS[era] = pi.card[era]; });
   }
 
-  // home_profile 적용
-  if (cfg.home_profile) Object.assign(HOME_PROFILE, cfg.home_profile);
+  // home_profile 적용 (깊은 병합)
+  if (cfg.home_profile) {
+    Object.keys(cfg.home_profile).forEach(era => {
+      if (!HOME_PROFILE[era]) HOME_PROFILE[era] = {};
+      Object.assign(HOME_PROFILE[era], cfg.home_profile[era]);
+    });
+  }
 
   // profile_full 적용
   if (cfg.profile_full) {

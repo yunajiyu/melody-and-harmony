@@ -5001,7 +5001,7 @@ async function loadSiteConfig() {
                  'joint_tl','eras_meta','gallery_tab','home_mini_gallery',
                  'profile_gallery','album_data',
                  'eps_data','ep_overview','era_stats',
-                 'eras_nodes','big_tl_nodes','mini_tl','anniversaries','dday_bg_url'];
+                 'eras_nodes','big_tl_nodes','mini_tl','anniversaries','dday_bg_url','cal_bg_url'];
   const results = await Promise.all(keys.map(k => _scFetch(k)));
   const cfg = {};
   keys.forEach((k,i) => { if (results[i] !== null) cfg[k] = results[i]; });

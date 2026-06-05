@@ -2143,6 +2143,8 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
           background-color:#f0e8df;
         "></div>
 
+        <!-- 물결 캔버스 -->
+        <canvas id="dday-wave" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;border-radius:16px"></canvas>
         <!-- 모서리 이너 페이드 -->
         <div style="position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 40px 18px rgba(255,255,255,0.35)"></div>
         <!-- 별 점멸 레이어 -->
@@ -2259,12 +2261,12 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
             </div>
           </div>
 
-        </div><!-- /TV 본체 -->
+          <!-- 자동 캐러셀 프로그레스바 -->
+          <div id="hmg-progress-wrap" style="position:absolute;bottom:8px;left:14px;right:50px;height:3px;border-radius:2px;background:rgba(255,255,255,0.25);overflow:hidden;z-index:10;">
+            <div id="hmg-progress-bar" style="height:100%;width:0%;background:rgba(255,255,255,0.9);border-radius:2px;transition:none;"></div>
+          </div>
 
-        <!-- 자동 캐러셀 프로그레스바 -->
-        <div id="hmg-progress-wrap" style="position:absolute;bottom:2px;left:24px;right:24px;height:3px;border-radius:2px;background:rgba(255,255,255,0.25);overflow:hidden;z-index:10;">
-          <div id="hmg-progress-bar" style="height:100%;width:0%;background:rgba(255,255,255,0.9);border-radius:2px;transition:none;"></div>
-        </div>
+        </div><!-- /TV 본체 -->
 
       </div>
     </div>
@@ -3329,6 +3331,52 @@ function mpFadeOutAndNext(){
       `;
       layer.appendChild(s);
     }
+  }
+
+  // ── 물결 효과 ──
+  const waveCanvas = document.getElementById('dday-wave');
+  if (waveCanvas) {
+    const wCtx = waveCanvas.getContext('2d');
+    let wt = 0;
+
+    function resizeWave() {
+      const r = waveCanvas.parentElement.getBoundingClientRect();
+      waveCanvas.width  = r.width  || 300;
+      waveCanvas.height = r.height || 160;
+    }
+    resizeWave();
+    window.addEventListener('resize', resizeWave);
+
+    function drawWave() {
+      const w = waveCanvas.width, h = waveCanvas.height;
+      wCtx.clearRect(0, 0, w, h);
+      wt += 0.012;
+
+      // 물결 3겹 — 속도·진폭·색상 다르게
+      const waves = [
+        { amp:10, freq:0.022, speed:1.0,  yBase:0.62, color:'rgba(255,255,255,0.07)' },
+        { amp:7,  freq:0.030, speed:1.5,  yBase:0.70, color:'rgba(255,255,255,0.09)' },
+        { amp:5,  freq:0.018, speed:0.7,  yBase:0.78, color:'rgba(255,255,255,0.12)' },
+      ];
+
+      waves.forEach(wave => {
+        wCtx.beginPath();
+        wCtx.moveTo(0, h);
+        for (let x = 0; x <= w; x += 2) {
+          const y = h * wave.yBase
+            + Math.sin(x * wave.freq + wt * wave.speed) * wave.amp
+            + Math.sin(x * wave.freq * 0.6 + wt * wave.speed * 1.3 + 1) * wave.amp * 0.5;
+          wCtx.lineTo(x, y);
+        }
+        wCtx.lineTo(w, h);
+        wCtx.closePath();
+        wCtx.fillStyle = wave.color;
+        wCtx.fill();
+      });
+
+      requestAnimationFrame(drawWave);
+    }
+    drawWave();
   }
 
   // ── 별똥별 효과 ──

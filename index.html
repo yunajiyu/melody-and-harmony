@@ -1083,6 +1083,13 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
   box-shadow:0 0 4px rgba(255,255,255,0.9);
   z-index:20;
 }
+@keyframes card-shine-move{
+  0%{left:-100%;opacity:0}
+  10%{opacity:1}
+  60%{left:160%;opacity:1}
+  65%{opacity:0}
+  100%{left:160%;opacity:0}
+}
 @keyframes card-breathe{
   0%,100%{box-shadow:0 2px 8px rgba(0,0,0,0.05)}
   50%{box-shadow:0 4px 18px rgba(0,0,0,0.13),0 0 0 2px var(--border-strong)}
@@ -2135,12 +2142,13 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
           background-size:cover;background-position:center;
           background-color:#f0e8df;
         "></div>
-        <!-- 어두운 오버레이 -->
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.18) 0%,rgba(0,0,0,0.32) 100%);z-index:1"></div>
+
         <!-- 모서리 이너 페이드 -->
         <div style="position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 40px 18px rgba(255,255,255,0.35)"></div>
         <!-- 별 점멸 레이어 -->
         <div id="dday-twinkle" style="position:absolute;inset:0;z-index:2;pointer-events:none"></div>
+        <!-- 별똥별 캔버스 -->
+        <canvas id="dday-meteor" style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;border-radius:16px"></canvas>
         <!-- 오른쪽 상단: 날짜 -->
         <div style="
           position:absolute;top:14px;right:16px;z-index:3;
@@ -2252,6 +2260,12 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
           </div>
 
         </div><!-- /TV 본체 -->
+
+        <!-- 자동 캐러셀 프로그레스바 -->
+        <div id="hmg-progress-wrap" style="position:absolute;bottom:2px;left:24px;right:24px;height:3px;border-radius:2px;background:rgba(255,255,255,0.25);overflow:hidden;z-index:10;">
+          <div id="hmg-progress-bar" style="height:100%;width:0%;background:rgba(255,255,255,0.9);border-radius:2px;transition:none;"></div>
+        </div>
+
       </div>
     </div>
 
@@ -2734,6 +2748,12 @@ function buildActiveCardFront(era) {
         <div id="card-sparkles" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>
         <!-- 홀로그램 틸트 글레어 -->
         <div id="card-glare" style="position:absolute;inset:0;border-radius:14px;pointer-events:none;z-index:4;opacity:0;transition:opacity 0.2s"></div>
+        <!-- 광나는 shimmer 오버레이 -->
+        <div id="card-shine" style="position:absolute;inset:0;border-radius:14px;pointer-events:none;z-index:5;overflow:hidden">
+          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;
+            background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,0.18) 50%,transparent 80%);
+            animation:card-shine-move 3.8s ease-in-out infinite;"></div>
+        </div>
         <!-- 페이드 오버레이 -->
         <div style="position:absolute;inset:0;pointer-events:none;z-index:5;background:
           linear-gradient(to bottom, rgba(238,240,243,0.35) 0%, transparent 18%, transparent 82%, rgba(238,240,243,0.35) 100%),
@@ -3309,6 +3329,71 @@ function mpFadeOutAndNext(){
       `;
       layer.appendChild(s);
     }
+  }
+
+  // ── 별똥별 효과 ──
+  const meteor_canvas = document.getElementById('dday-meteor');
+  if (meteor_canvas) {
+    const mCtx = meteor_canvas.getContext('2d');
+    const meteors = [];
+
+    function resizeMeteor() {
+      const rect = meteor_canvas.parentElement.getBoundingClientRect();
+      meteor_canvas.width  = rect.width  || 300;
+      meteor_canvas.height = rect.height || 160;
+    }
+    resizeMeteor();
+    window.addEventListener('resize', resizeMeteor);
+
+    function spawnMeteor() {
+      const w = meteor_canvas.width;
+      const h = meteor_canvas.height;
+      const angle = 30 + Math.random() * 20; // 30~50도
+      const rad   = angle * Math.PI / 180;
+      const len   = 50 + Math.random() * 60;
+      const speed = 2.5 + Math.random() * 2;
+      const x     = Math.random() * w * 0.8;
+      const y     = Math.random() * h * 0.4;
+      meteors.push({ x, y, vx: Math.cos(rad) * speed, vy: Math.sin(rad) * speed, len, life: 1, decay: 0.018 + Math.random() * 0.012 });
+    }
+
+    let mFrame = 0;
+    function drawMeteors() {
+      const w = meteor_canvas.width, h = meteor_canvas.height;
+      mCtx.clearRect(0, 0, w, h);
+      // 새 별똥별 랜덤 생성
+      mFrame++;
+      if (mFrame % 90 === 0 && Math.random() < 0.7) spawnMeteor();
+      if (mFrame % 180 === 0 && Math.random() < 0.4) spawnMeteor();
+
+      for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i];
+        m.x += m.vx; m.y += m.vy; m.life -= m.decay;
+        if (m.life <= 0) { meteors.splice(i, 1); continue; }
+        const tailX = m.x - Math.cos(Math.atan2(m.vy, m.vx)) * m.len;
+        const tailY = m.y - Math.sin(Math.atan2(m.vy, m.vx)) * m.len;
+        const grad = mCtx.createLinearGradient(tailX, tailY, m.x, m.y);
+        grad.addColorStop(0, `rgba(255,255,255,0)`);
+        grad.addColorStop(1, `rgba(255,255,255,${m.life * 0.9})`);
+        mCtx.beginPath();
+        mCtx.moveTo(tailX, tailY);
+        mCtx.lineTo(m.x, m.y);
+        mCtx.strokeStyle = grad;
+        mCtx.lineWidth = 1.5 * m.life;
+        mCtx.lineCap = 'round';
+        mCtx.stroke();
+        // 머리 빛
+        mCtx.beginPath();
+        mCtx.arc(m.x, m.y, 1.5 * m.life, 0, Math.PI * 2);
+        mCtx.fillStyle = `rgba(255,255,255,${m.life * 0.95})`;
+        mCtx.fill();
+      }
+      requestAnimationFrame(drawMeteors);
+    }
+    // 첫 별똥별 약간 딜레이 후 시작
+    setTimeout(spawnMeteor, 800);
+    setTimeout(spawnMeteor, 2200);
+    drawMeteors();
   }
 })();
 
@@ -4534,13 +4619,55 @@ function initHomeGallery() {
     el.ontouchend   = e => { if(!drag)return; drag=false; const d=sx-e.changedTouches[0].clientX; if(Math.abs(d)>thr) window.hmgSlide(d>0?1:-1); };
   }
 
+  // 자동 캐러셀
+  const HMG_DURATION = 11000; // 11초
+  let hmgAutoTimer = null;
+  let hmgProgTimer = null;
+  let hmgProgStart = null;
+
+  function hmgProgressStart() {
+    const bar = document.getElementById('hmg-progress-bar');
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    // 다음 프레임에 transition 시작
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bar.style.transition = 'width ' + HMG_DURATION + 'ms linear';
+        bar.style.width = '100%';
+      });
+    });
+  }
+
+  function hmgAutoNext() {
+    if (!hmgFlat.length) return;
+    hmgIdx = (hmgIdx + 1) % hmgFlat.length;
+    hmgRender();
+    hmgProgressStart();
+    hmgAutoTimer = setTimeout(hmgAutoNext, HMG_DURATION);
+  }
+
+  function hmgAutoStart() {
+    clearTimeout(hmgAutoTimer);
+    hmgAutoTimer = setTimeout(hmgAutoNext, HMG_DURATION);
+    hmgProgressStart();
+  }
+
+  function hmgAutoReset() {
+    // 수동 조작 시 타이머 리셋
+    clearTimeout(hmgAutoTimer);
+    hmgAutoStart();
+  }
+
   window.hmgSlide = function(dir) {
     if (!hmgFlat.length) return;
     hmgIdx = (hmgIdx + dir + hmgFlat.length) % hmgFlat.length;
     hmgRender();
+    hmgAutoReset();
   };
   window.hmgJump = function(i) {
     hmgIdx = i; hmgRender();
+    hmgAutoReset();
   };
   window.initHmg = function() {
     hmgFlat = hmgBuildFlat();
@@ -4548,6 +4675,7 @@ function initHomeGallery() {
     hmgRender();
     const slide = document.getElementById('hmg-slide');
     if (slide) initHmgDrag(slide);
+    hmgAutoStart();
   };
 })();
 

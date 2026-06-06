@@ -188,7 +188,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 
 /* ── LAYOUT ── */
 .main{padding:0}
-.page{display:none}.page.active{display:block}
+.page{display:none}.page.active{display:block}#page-home.active{display:flex}
 
 /* ── HERO (대시보드 헤더) ── */
 .dash-hero{
@@ -2107,7 +2107,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 <!-- ════════════════════════════════════════
      HOME PAGE
 ════════════════════════════════════════ -->
-<div id="page-home" class="page active" style="display:flex;flex-direction:column;overflow:hidden">
+<div id="page-home" class="page active" style="flex-direction:column;overflow:hidden">
 
   <div style="height:0.2rem;flex-shrink:0"></div>
 
@@ -5131,6 +5131,22 @@ async function loadSiteConfig() {
 }
 
 function _reRenderAll() {
+  // 카드 이미지만 조용히 교체 (깜빡임 없이)
+  const era = ERAS.find(e => e.id === activeEraId);
+  if (era) {
+    const imgUrl = CARD_IMGS[era.id];
+    const imgArea = document.getElementById('card-img-area');
+    if (imgArea && imgUrl) {
+      // 이미 같은 이미지면 스킵
+      const existing = imgArea.querySelector('img');
+      if (!existing || existing.src !== imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:14px';
+        img.onload = () => { imgArea.innerHTML = ''; imgArea.appendChild(img); initCardEffects(); };
+      }
+    }
+  }
   buildMiniCards();
   renderHomeProfileCards(homeProfileEra || 'y1');
   const activeEraTab = document.querySelector('#profile-era-tabs-global .profile-era-tab.active');

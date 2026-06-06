@@ -5050,13 +5050,26 @@ async function loadSiteConfig() {
     });
   }
 
-  // profile_full 적용
+  // profile_full 적용 (빈 값은 하드코딩 유지)
   if (cfg.profile_full) {
     ['sh','si'].forEach(char => {
       if (!cfg.profile_full[char]) return;
       Object.entries(cfg.profile_full[char]).forEach(([era, d]) => {
-        const old = PROFILE_FULL_DATA[char].eras[era] || {};
-        PROFILE_FULL_DATA[char].eras[era] = { ...old, ...d, info: { ...(old.info||{}), ...(d.info||{}) } };
+        const base = PROFILE_FULL_DATA[char].eras[era] || {};
+        const merged = { ...base };
+        // 빈 문자열·빈 배열은 하드코딩 값 유지
+        ['look','personality','note'].forEach(k => {
+          if (d[k] && d[k].trim()) merged[k] = d[k];
+        });
+        if (d.metaTags && d.metaTags.length) merged.metaTags = d.metaTags;
+        if (d.tags && d.tags.length) merged.tags = d.tags;
+        if (d.info) {
+          merged.info = { ...base.info };
+          Object.entries(d.info).forEach(([k, v]) => {
+            if (v && v.toString().trim()) merged.info[k] = v;
+          });
+        }
+        PROFILE_FULL_DATA[char].eras[era] = merged;
       });
     });
   }
@@ -5142,7 +5155,7 @@ function _reRenderAll() {
       if (!existing || existing.src !== imgUrl) {
         const img = document.createElement('img');
         img.src = imgUrl;
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:14px';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;position:absolute;inset:0;border-radius:14px';
         img.onload = () => { imgArea.innerHTML = ''; imgArea.appendChild(img); initCardEffects(); };
       }
     }

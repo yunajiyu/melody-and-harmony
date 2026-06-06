@@ -1815,38 +1815,41 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 /* ── 라이트박스 ── */
 #lightbox{
   display:none;position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,0.85);
+  background:transparent;
   align-items:center;justify-content:center;
-  cursor:zoom-out;
+  pointer-events:none;
 }
 #lightbox.open{display:flex}
 #lightbox-inner{
-  position:relative;max-width:92vw;max-height:92vh;
-  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  display:inline-flex;flex-direction:column;align-items:center;
+  pointer-events:auto;
+  filter:drop-shadow(0 8px 40px rgba(0,0,0,0.28));
 }
 #lightbox-img{
-  max-width:92vw;max-height:88vh;
-  object-fit:contain;border-radius:8px;
+  max-width:80vw;max-height:82vh;
+  object-fit:contain;border-radius:12px;
   display:block;cursor:default;
-  box-shadow:0 8px 48px rgba(0,0,0,0.5);
 }
 #lightbox-close{
-  position:absolute;top:-36px;right:0;
-  width:28px;height:28px;border-radius:50%;
-  background:rgba(255,255,255,0.15);border:none;
-  color:#fff;font-size:16px;line-height:1;
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:32px;height:32px;border-radius:8px;
+  background:#fff;border:none;
+  color:#888;font-size:14px;font-weight:700;line-height:1;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.14);
   transition:background .15s;
+  z-index:1;
 }
-#lightbox-close:hover{background:rgba(255,255,255,0.3)}
+#lightbox-close:hover{background:#f5f5f5;color:#444}
 </style>
 </head>
 <body>
 <!-- 라이트박스 -->
 <div id="lightbox" onclick="closeLightbox()">
   <div id="lightbox-inner" onclick="event.stopPropagation()">
-    <button id="lightbox-close" onclick="closeLightbox()">✕</button>
     <img id="lightbox-img" src="" alt="">
+    <button id="lightbox-close" onclick="closeLightbox()">✕</button>
   </div>
 </div>
 <div class="copy-toast" id="copy-toast">copy♥</div>
@@ -2509,11 +2512,11 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 <div id="page-album" class="page">
 
   <!-- 캐러셀 뷰 -->
-  <div id="album-carousel-view">
+  <div id="album-carousel-view" style="max-width:800px;margin:24px auto 0">
 
     <!-- 큰 메인 이미지 + 화살표 오버레이 -->
-    <div style="position:relative;border-radius:20px;overflow:hidden;background:var(--bg);border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:12px">
-      <div id="alb-main-img" style="height:480px;transition:opacity 0.25s;display:flex;align-items:center;justify-content:center;font-size:14px;color:#bbb;background:var(--bg)">이미지</div>
+    <div style="position:relative;border-radius:20px;overflow:hidden;background:var(--bg);border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:0;line-height:0">
+      <div id="alb-main-img" style="transition:opacity 0.25s;background:var(--bg);height:420px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden">이미지</div>
       <!-- 좌 화살표 -->
       <div onclick="albSlide(-1)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:32px;line-height:1;color:rgba(255,255,255,0.9);text-shadow:0 1px 8px rgba(0,0,0,0.45);z-index:10;user-select:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">‹</div>
       <!-- 우 화살표 -->
@@ -2521,7 +2524,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
     </div>
 
     <!-- 바둑판 정사각 그리드 -->
-    <div id="alb-thumbs" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
+    <div id="alb-thumbs" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:24px"></div>
 
   </div>
 
@@ -4340,10 +4343,10 @@ const HOME_MINI_GALLERY = [
     if (mainEl) {
       mainEl.style.opacity = '0';
       setTimeout(() => {
-        mainEl.style.background = img.c;
+        mainEl.style.background = img.c || '';
         mainEl.innerHTML = img.url
-          ? `<img src="${img.url}" style="width:100%;height:100%;object-fit:cover">`
-          : `<div style="font-size:13px;color:#bbb">${img.lbl}</div>`;
+          ? `<img src="${img.url}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;cursor:zoom-in" onclick="openLightbox('${img.url}')">`
+          : `<div style="padding:40px 0;font-size:13px;color:#bbb;text-align:center;width:100%">${img.lbl}</div>`;
         mainEl.style.opacity = '1';
       }, 180);
     }
@@ -4357,8 +4360,8 @@ const HOME_MINI_GALLERY = [
           background:${im.c};
           outline:${i === albIdx ? '2.5px solid #F9C4D2' : 'none'};
           outline-offset:-2px;
-          opacity:${i === albIdx ? '1' : '0.55'};
-          transition:opacity 0.18s,outline 0.18s;
+          opacity:1;
+          transition:outline 0.18s;
           display:flex;align-items:center;justify-content:center;
         ">
           ${im.url ? `<img src="${im.url}" style="width:100%;height:100%;object-fit:cover">` : ''}

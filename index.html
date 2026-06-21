@@ -855,6 +855,7 @@ body{font-family:'SUITE',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans 
 .ep-grade.g1{background:var(--y1-bg);color:var(--y1)}
 .ep-grade.g2{background:var(--y2-bg);color:var(--y2)}
 .ep-grade.g3{background:var(--y3-bg);color:var(--y3)}
+.ep-grade.ga{background:var(--adult-bg);color:var(--adult)}
 .ep-title{font-size:13px;color:var(--text);flex:1;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ep-size{font-size:10px;color:var(--text-soft);white-space:nowrap}
 .ep-arrow{font-size:13px;color:var(--text-faint);flex-shrink:0}
@@ -3094,7 +3095,7 @@ function buildActiveCardFront(era) {
             Click!
           </div>
         </div>
-        <div id="card-chat-stack" style="position:absolute;top:10px;bottom:calc(50% + 10px);left:10px;right:10px;z-index:10;display:flex;flex-direction:column;gap:4px;justify-content:flex-end;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 6%,black 100%);mask-image:linear-gradient(to bottom,transparent 0%,black 6%,black 100%);"></div>
+        <div id="card-chat-stack" style="position:absolute;left:10px;right:auto;bottom:54px;top:auto;width:60%;max-height:65%;z-index:9;display:flex;flex-direction:column;gap:4px;justify-content:flex-end;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 12%,black 100%);mask-image:linear-gradient(to bottom,transparent 0%,black 12%,black 100%);"></div>
         <div id="card-like-wrap" style="position:absolute;bottom:14px;left:14px;z-index:10;display:flex;flex-direction:column;align-items:center">
           <div id="card-floating-hearts" style="position:absolute;bottom:28px;left:0;pointer-events:none;width:40px"></div>
           <div style="font-size:24px;line-height:1;color:#FF3B6B;text-shadow:0 0 8px rgba(255,59,107,0.4)">♥</div>
@@ -3208,6 +3209,25 @@ function renderActiveCard(animate) {
   requestAnimationFrame(startCardHearts);
 }
 
+const DEFAULT_CARD_CHAT_MSGS = [
+  { name:'수환', avatar:'🐱', text:'책 좀 조심히 다뤄' },
+  { name:'시몬', avatar:'🐻', text:'미안~ 실수였어 🤍' },
+  { name:'수환', avatar:'🐱', text:'...' },
+  { name:'시몬', avatar:'🐻', text:'그렇게 기분 나쁜 건 아니잖아?' },
+  { name:'수환', avatar:'🐱', text:'너에 대해 알고 싶어' },
+  { name:'시몬', avatar:'🐻', text:'나도 😊' },
+  { name:'수환', avatar:'🐱', text:'같이 가자' },
+  { name:'시몬', avatar:'🐻', text:'조금.. 귀찮다' },
+  { name:'수환', avatar:'🐱', text:'너랑 제일 친하고 싶어' },
+  { name:'시몬', avatar:'🐻', text:'나도 그래' },
+  { name:'수환', avatar:'🐱', text:'선생님 같아' },
+  { name:'시몬', avatar:'🐻', text:'네가 내 첫사랑이야 💕' },
+  { name:'수환', avatar:'🐱', text:'나만 보고 싶어' },
+  { name:'시몬', avatar:'🐻', text:'알아 나도' },
+  { name:'수환', avatar:'🐱', text:'어디야' },
+  { name:'시몬', avatar:'🐻', text:'곧 도착해 ♥' },
+];
+
 function startCardHearts() {
   const wrap = document.getElementById('card-floating-hearts');
   if (!wrap) return;
@@ -3216,24 +3236,6 @@ function startCardHearts() {
 
   const HCOLORS = ['#FFB3D1','#FFC8E0','#FFD6EA','#FFAACB','#FFC2D4'];
 
-  let CHAT_MSGS = window._CARD_CHAT_MSGS || [
-    { name:'수환', avatar:'🐱', text:'책 좀 조심히 다뤄' },
-    { name:'시몬', avatar:'🐻', text:'미안~ 실수였어 🤍' },
-    { name:'수환', avatar:'🐱', text:'...' },
-    { name:'시몬', avatar:'🐻', text:'그렇게 기분 나쁜 건 아니잖아?' },
-    { name:'수환', avatar:'🐱', text:'너에 대해 알고 싶어' },
-    { name:'시몬', avatar:'🐻', text:'나도 😊' },
-    { name:'수환', avatar:'🐱', text:'같이 가자' },
-    { name:'시몬', avatar:'🐻', text:'조금.. 귀찮다' },
-    { name:'수환', avatar:'🐱', text:'너랑 제일 친하고 싶어' },
-    { name:'시몬', avatar:'🐻', text:'나도 그래' },
-    { name:'수환', avatar:'🐱', text:'선생님 같아' },
-    { name:'시몬', avatar:'🐻', text:'네가 내 첫사랑이야 💕' },
-    { name:'수환', avatar:'🐱', text:'나만 보고 싶어' },
-    { name:'시몬', avatar:'🐻', text:'알아 나도' },
-    { name:'수환', avatar:'🐱', text:'어디야' },
-    { name:'시몬', avatar:'🐻', text:'곧 도착해 ♥' },
-  ];
 
   // ── 하트
   window._cardHeartTimer = setInterval(() => {
@@ -3264,6 +3266,7 @@ function startCardHearts() {
     const stack = document.getElementById('card-chat-stack');
     if (!stack) return;
 
+    const CHAT_MSGS = window._CARD_CHAT_MSGS || DEFAULT_CARD_CHAT_MSGS;
     const msg   = CHAT_MSGS[_chatIdx % CHAT_MSGS.length];
     _chatIdx++;
     const isSh  = msg.name === '수환';
@@ -4136,7 +4139,7 @@ const PROFILE_IMGS = {
     adult:'https://raw.githubusercontent.com/yunajiyu/ha-static-xk7q/main/images/ad-si-profile.png',
   },
 };
-const GRADE_TO_ERA = {'1학년':'y1','2학년':'y2','3학년':'y3'};
+const GRADE_TO_ERA = {'1학년':'y1','2학년':'y2','3학년':'y3','성인':'adult'};
 
 function parseMdToBlocks(mdText, ep) {
   const era = GRADE_TO_ERA[ep?.grade] || 'y1';
@@ -5630,7 +5633,7 @@ function _reRenderAll() {
         const img = document.createElement('img');
         img.src = imgUrl;
         img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;position:absolute;inset:0;border-radius:14px';
-        img.onload = () => { imgArea.innerHTML = ''; imgArea.appendChild(img); initCardEffects(); };
+        img.onload = () => { const oldImg = imgArea.querySelector('img'); if (oldImg) oldImg.remove(); imgArea.insertBefore(img, imgArea.firstChild); initCardEffects(); };
       }
     }
   }

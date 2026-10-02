@@ -276,6 +276,14 @@ label{display:block;font-weight:500;margin:12px 0 4px}
 .rj-clue.locked{border-left-color:var(--line);color:var(--muted)}
 .rj-era{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--bg)}
 .rj-era b{font-family:'Gowun Batang',serif}
+
+.dc-scene{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;background:linear-gradient(#f3dfb0,#d9b673);border:1px solid var(--line,#ccc);user-select:none;touch-action:none}
+.dc-base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dc-note{position:absolute;left:8px;top:6px;font-size:12px;opacity:.7}
+.dc-it{position:absolute;transform:translate(-50%,-50%)}
+.dc-it.mv{cursor:grab;touch-action:none}
+.dc-it img{width:100%;display:block;pointer-events:none;-webkit-user-drag:none}
+.dc-fb{display:flex;align-items:center;justify-content:center;aspect-ratio:1;font-size:clamp(18px,4vw,34px);pointer-events:none}
 </style>
 </head>
 <body>
@@ -709,6 +717,7 @@ function migrate(){
   if(!G.mat) G.mat={stone:0,wood:0,cloth:0,relic:0};
   if(!G.home) G.home={name:'',built:{},lastRestDay:0,lastStudyDay:0};
   if(!G.home.built) G.home.built={};
+  if(!G.home.decor) G.home.decor={owned:{},placed:{}};
   ['mapDone','discovered','pets','chronicle','lexicon','recent','log','choices','items','heardRumors','rumors','threads'].forEach(k=>{ if(!Array.isArray(G[k])) G[k]=[] });
   if(!G.rel) G.rel={};
   if(G.relEvt===undefined) G.relEvt=null;
@@ -1923,6 +1932,7 @@ function openShop(){
     <h4 style="margin:14px 0 4px">휴대 용량</h4>${capRow('w')}${capRow('f')}${capRow('t')}
     <p class="muted" style="font-size:12px">물·식량·횃불은 용량까지만 들고 다닐 수 있고 초과분은 버려집니다.${G.loc==='town'?` ${curTown().n}: ${curTown().perk}.`:''} 가격 — 카스르·거점: 물 🪙${PRICE_TOWN.water} · 식량 🪙${PRICE_TOWN.food} · 횃불 🪙${PRICE_TOWN.torch}. 사막 길에서 가끔 만나는 대상 상인(🐫 버튼)이나 이야기 속 상인에게 사면 물·식량 🪙${PRICE_ROAD.water} · 횃불 🪙${PRICE_ROAD.torch}.</p>
     ${mt}
+    ${decorShopHTML()}
     <h4 style="margin:14px 0 4px">물건 팔기</h4>${sells||'<p class="muted">팔 수 있는 물건이 없습니다.</p>'}
     <p class="muted">팔면 사전의 같은 이름 「물건」 항목도 함께 지워집니다. 물주머니 같은 소모품은 소지품에서 "사용"하세요.</p>`);
 }
@@ -5034,7 +5044,7 @@ function fixedHTML(){
   }else if(L==='home'){
     mvLbl='🧭 이동';
     mv=btn('enterCity(false)','↩ 카스르 시장으로')+btn('startExpedition()','🐪 유적 원정 떠나기','primary');
-    ac=btn('openBuild()','🔨 시설 짓기')+btn('homeRest()','🛏 거점에서 쉬기')+btn('openRel()','👥 인연')
+    ac=btn('openBuild()','🔨 시설 짓기')+btn('openDecor()','🏡 거점 꾸미기')+btn('homeRest()','🛏 거점에서 쉬기')+btn('openRel()','👥 인연')
       +(has('well')?btn('wellFill()',wellLabel()):'')+(has('store')?btn('openStore()','📦 저장고'):'')
       +(has('workshop')?btn('appraise()','🏺 유물 감정'):'')+(has('study')?btn('studyMap()','🌌 별지도 연구'):'')
       +(G.comp.met&&(G.comp.joined||has('guest'))?btn('talkYumin()',yuminFindLabel()):'');
@@ -5692,9 +5702,120 @@ function openGuide(){
     ${Object.values(MOUNTS).map(d=>row(`${d.n}<br><span class="muted">${d.desc}</span>`,`🪙${d.price}<br><span class="muted">사료 식량 ${d.feed}/원정</span>`)).join('')}
     <p class="muted">탈것은 한 마리만 둘 수 있습니다. 사료(식량)를 줄 수 없으면 그 원정에서는 이점이 없습니다. 팔면 값의 절반을 돌려받습니다.</p>
     ${h3('거점 시설')}
-    ${FAC.map(f=>row(`${f.n}<br><span class="muted">${f.desc}</span>`,costText(f.cost))).join('')}`);
+    ${FAC.map(f=>row(`${f.n}<br><span class="muted">${f.desc}</span>`,costText(f.cost))).join('')}
+    ${h3('거점 꾸미기')}
+    ${row('집 단계','지은 시설 개수에 따라 집 그림이 4단계로 바뀜 (0~2 / 3~5 / 6~8 / 전부)')}
+    ${row('가구·장식','카스르 시장(가구) · 마을 상점(그 마을 특산 장식)에서 사면 영구 보유. 거점에서 🏡 거점 꾸미기를 열어 자유롭게 놓고 치울 수 있음 (끌어서 이동). 효과는 없고 외형만 바뀜')}
+    ${row('유물 진열','보유한 유물 등급별로 진열대를 놓을 수 있음 (팔거나 쓰면 진열도 사라짐)')}`);
 }
 
+
+
+/* =========================================================
+   35. 거점 꾸미기 — 집 그림(4단계) 위에 시설·가구·장식·유물 진열을 겹쳐 놓음
+   그림 파일이 없으면 이모지로 대신 보임. 파일은 images/home/ 에 넣고 아래 좌표·크기(%)는 그림에 맞게 조절
+   ========================================================= */
+const HOME_IMG='images/home/';
+/* 시설 그림: 지은 시설이 정해진 자리에 나타남 (x,y=중심 위치 %, w=가로 폭 %). 깊은 우물·큰 저장고는 낮은 단계 그림을 대체 */
+const FAC_SLOTS={
+  well:{img:'fac_well',ic:'💧',x:18,y:72,w:16.7},well2:{img:'fac_well2',ic:'💧',x:18,y:72,w:20.8,rep:'well'},
+  store:{img:'fac_store',ic:'📦',x:80,y:62,w:20.8},store2:{img:'fac_store2',ic:'📦',x:80,y:62,w:25,rep:'store'},
+  stable:{img:'fac_stable',ic:'🐪',x:84,y:80,w:25},workshop:{img:'fac_workshop',ic:'🔨',x:66,y:40,w:25},
+  garden:{img:'fac_garden',ic:'🌴',x:30,y:82,w:25},guest:{img:'fac_guest',ic:'🛏',x:40,y:38,w:20.8},study:{img:'fac_study',ic:'🌌',x:55,y:55,w:20.8},
+};
+/* 가구·장식: from = market(카스르 시장) · 마을 id(그 마을 상점) · relic(보유 유물 등급 g) */
+const DECOR=[
+  {id:'furn_bed',n:'침대',ic:'🛏',price:30,from:'market',w:16.7},
+  {id:'furn_rug',n:'카펫',ic:'🟥',price:20,from:'market',w:12.5},
+  {id:'furn_table',n:'탁자와 의자',ic:'🪑',price:25,from:'market',w:16.7},
+  {id:'furn_lamp',n:'등불',ic:'🏮',price:10,from:'market',w:8},
+  {id:'furn_shelf',n:'선반',ic:'🗄',price:20,from:'market',w:12.5},
+  {id:'furn_pot',n:'항아리',ic:'🏺',price:10,from:'market',w:8},
+  {id:'furn_plant',n:'화분',ic:'🪴',price:15,from:'market',w:8},
+  {id:'furn_cushion',n:'방석 더미',ic:'🛋',price:15,from:'market',w:10},
+  {id:'deco_east_palm',n:'작은 대추야자 화분',ic:'🌴',price:25,from:'east',w:12.5},
+  {id:'deco_east_fountain',n:'샘물 분수',ic:'⛲',price:50,from:'east',w:12.5},
+  {id:'deco_east_lantern',n:'푸른 유리 등',ic:'🔵',price:30,from:'east',w:10},
+  {id:'deco_south_tent',n:'작은 유목민 천막',ic:'⛺',price:40,from:'south',w:12.5},
+  {id:'deco_south_drum',n:'가죽 북',ic:'🥁',price:25,from:'south',w:10},
+  {id:'deco_south_banner',n:'별무늬 깃발',ic:'🚩',price:20,from:'south',w:8},
+  {id:'deco_north_pillar',n:'부서진 기둥',ic:'🏛',price:45,from:'north',w:10},
+  {id:'deco_north_statue',n:'작은 석상',ic:'🗿',price:60,from:'north',w:10},
+  {id:'deco_north_urn',n:'고풍스러운 단지',ic:'⚱',price:35,from:'north',w:10},
+  {id:'relic_1',n:'흔한 유물 진열대',ic:'🏺',from:'relic',g:0,w:10.4},
+  {id:'relic_2',n:'귀한 유물 진열대',ic:'🏺',from:'relic',g:1,w:10.4},
+  {id:'relic_3',n:'희귀한 유물 진열대',ic:'🏺',from:'relic',g:2,w:10.4},
+  {id:'relic_4',n:'전설의 유물 진열대',ic:'🏺',from:'relic',g:3,w:10.4},
+];
+const DECOR_MARKET_NOTE='거점 부지가 있어야 놓을 수 있습니다';
+function decorSt(){ if(!G.home.decor) G.home.decor={owned:{},placed:{}}; return G.home.decor }
+function homeStage(){ const n=FAC.filter(f=>f.id!=='land'&&has(f.id)).length; return n>=FAC.length-1?4:n>=6?3:n>=3?2:1 }
+function decorHave(d){ if(d.from==='relic'){ relicSync(); return (G.relicG[d.g]||0)>0 } return !!decorSt().owned[d.id] }
+function decorImgHTML(file,ic,ext){
+  return `<img src="${HOME_IMG}${file}.${ext||'png'}" alt="" onerror="this.outerHTML='<span class=&quot;dc-fb&quot;>${ic}</span>'">`;
+}
+function decorSceneHTML(movable){
+  const st=decorSt(), n=homeStage();
+  let h=`<img class="dc-base" src="${HOME_IMG}house_${n}.webp" alt="" onerror="this.remove()"><span class="dc-note">집 ${n}단계</span>`;
+  Object.entries(FAC_SLOTS).forEach(([id,o])=>{
+    if(!has(id)||(o.rep===undefined&&has(id+'2'))) return;
+    h+=`<div class="dc-it" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;z-index:${Math.round(o.y*10)}" title="${esc((FAC.find(f=>f.id===id)||{}).n||'')}">${decorImgHTML(o.img,o.ic)}</div>`;
+  });
+  DECOR.forEach(d=>{
+    const pl=st.placed[d.id]; if(!pl||!decorHave(d)) return;
+    h+=`<div class="dc-it ${movable?'mv':''}" style="left:${pl.x}%;top:${pl.y}%;width:${d.w}%;z-index:${Math.round(pl.y*10)}" title="${esc(d.n)}" ${movable?`onpointerdown="decorDown(event,'${d.id}')"`:''}>${decorImgHTML(d.id,d.ic)}</div>`;
+  });
+  return h;
+}
+let _dd=null;
+function decorDown(ev,id){
+  const sc=document.getElementById('dcScene'); if(!sc) return;
+  ev.preventDefault(); const el=ev.currentTarget; try{ el.setPointerCapture(ev.pointerId) }catch(e){}
+  _dd={id,el,sc,x:null,y:null};
+  el.onpointermove=decorMove; el.onpointerup=decorUp; el.onpointercancel=decorUp;
+}
+function decorMove(ev){
+  if(!_dd) return;
+  const r=_dd.sc.getBoundingClientRect();
+  const x=clamp((ev.clientX-r.left)/r.width*100,2,98), y=clamp((ev.clientY-r.top)/r.height*100,2,98);
+  _dd.el.style.left=x+'%'; _dd.el.style.top=y+'%'; _dd.el.style.zIndex=Math.round(y*10); _dd.x=x; _dd.y=y;
+}
+function decorUp(){
+  if(!_dd) return; const d=_dd; _dd=null;
+  if(d.x!=null){ decorSt().placed[d.id]={x:Math.round(d.x*10)/10,y:Math.round(d.y*10)/10}; save() }
+}
+function decorPlace(id){ const st=decorSt(), n=Object.keys(st.placed).length; st.placed[id]={x:30+(n*13)%45,y:68+(n*7)%22}; save(); openDecor() }   // 겹치지 않게 조금씩 어긋난 자리에 놓임
+function decorRemove(id){ delete decorSt().placed[id]; save(); openDecor() }
+function openDecor(){
+  if(!G||!G.home) return;
+  const st=decorSt();
+  const src=d=>d.from==='market'?'카스르 시장':d.from==='relic'?'유적에서 얻은 유물':(TOWNS[d.from]||{}).n||'';
+  const have=DECOR.filter(decorHave);
+  const rows=have.map(d=>{
+    const on=!!st.placed[d.id];
+    return `<div class="shop-row" style="align-items:center"><span>${d.ic} ${esc(d.n)} <span class="muted" style="font-size:12px">${esc(src(d))}</span></span>${on?`<button class="small" onclick="decorRemove('${d.id}')">치우기</button>`:`<button class="small primary" onclick="decorPlace('${d.id}')">놓기</button>`}</div>`;
+  }).join('')||'<p class="muted">아직 가구나 장식이 없습니다. 카스르 시장에서 가구를, 마을 상점에서 그 마을의 특산 장식을 살 수 있고, 유적에서 유물을 얻으면 진열대를 놓을 수 있습니다.</p>';
+  modal('🏡 거점 꾸미기',`<p class="muted" style="font-size:13px">놓은 가구와 장식은 끌어서 옮길 수 있습니다. 시설은 지으면 정해진 자리에 나타납니다. 가구·장식은 외형만 바뀌며 효과는 없습니다.${has('land')?'':' '+DECOR_MARKET_NOTE+'.'}</p>
+    <div class="dc-scene" id="dcScene">${decorSceneHTML(true)}</div>
+    <h4 style="margin:14px 0 4px">가지고 있는 것</h4>${rows}`);
+}
+/* 상점에 끼워 넣는 구역: 카스르 시장 = 기본 가구, 마을 = 그 마을 특산 */
+function decorShopHTML(){
+  const here=G.loc==='town'?G.town:'market';
+  const list=DECOR.filter(d=>d.from===here); if(!list.length) return '';
+  const st=decorSt();
+  return `<h4 style="margin:14px 0 4px">🏡 ${here==='market'?'가구':esc(TOWNS[here].n)+' 특산 장식'}</h4>`
+    +list.map(d=>`<div class="shop-row"><span>${d.ic} ${esc(d.n)}</span>${st.owned[d.id]?'<span class="muted">보유</span>':`<button class="small" onclick="buyDecor('${d.id}')">금화 ${d.price}</button>`}</div>`).join('')
+    +`<p class="muted" style="font-size:12px">사 두면 영구 보유 · 거점의 🏡 거점 꾸미기에서 놓고 치울 수 있습니다.${has('land')?'':' '+DECOR_MARKET_NOTE+'.'}</p>`;
+}
+function buyDecor(id){
+  const d=DECOR.find(x=>x.id===id); if(!d||!d.price) return;
+  const st=decorSt(); if(st.owned[id]) return;
+  if(G.gold<d.price) return toast('금화가 부족합니다');
+  G.gold-=d.price; st.owned[id]=true;
+  addLog('fx',`🏡 ${d.n}${josa(d.n,'을','를')} 샀습니다 (금화 -${d.price})`);
+  save(); render(); openShop();
+}
 
 /* =========================================================
    29. 시작 · 캐릭터 만들기 · 저장 파일

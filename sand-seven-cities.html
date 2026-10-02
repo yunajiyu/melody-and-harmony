@@ -1278,6 +1278,39 @@ const IX={
   SLEEP_NEG:/(않|못|말고|안\s*잔|안\s*쉰|아니)/,
   WAIT:/(하루|이틀|사흘|며칠|(\d+)\s*일)\s*(을|를|동안|간|만)?\s*(기다린|머무른|머문|머물|보낸|지낸|버틴|쉰다|묵는다|지새)/,
 };
+/* 다섯 구역(시장·찻집·여관·성문·오아시스) 중 한 곳으로 '간다'는 문장이면 그 구역 키, 아니면 null.
+   임시 장소 판정(spotMove)에서 구역 이동 문장을 걸러 내는 데만 씀 */
+function districtMove(t){
+  if(!G||G.loc!=='city') return null;
+  t=String(t||'');
+  if(/(에서\s*(쉰|묵|잔|마신|듣|산다|거닌))/.test(t)) return null;
+  const hit=IX.DIST_KEYS.find(([k,re])=>re.test(t)&&new RegExp(re.source+'[가-힣\\s]{0,6}'+IX.DIST_VERB.source).test(t));
+  return hit?hit[0]:null;
+}
+/* ---------- 임시 장소: 다섯 구역 밖의 곳(대장간·사원·골목 등)으로 가면 G.spot={name}만 기록하고 구역은 그대로 ----------
+   G.spot이 있는 동안: 구역 전용 기능(소문·숙박·상점·원정 출발·거점 이동)은 막히고, 구역으로 돌아가는 버튼이 나옴.
+   구역으로 이동(goDistrict)하거나 카스르를 떠나면 비워짐 */
+const SPOT_STOP=/^(안|밖|안쪽|바깥|뒤|앞|옆|위|아래|저쪽|이쪽|그쪽|거기|여기|그곳|이곳|저곳|근처|주변)$/;
+const SPOT_EXCL=/(카스르|도시|거점|집|와하|천막|자르한|이람|나루|항구|유적|사막|원정|동굴|성채|하르다|등대|포구|숲길|절벽|야자|돌문|마을|서쪽|동쪽|남쪽|북쪽|구역|장소|출구|입구)/;
+function spotOn(){ return !!(G&&G.spot&&G.loc==='city') }
+function spotMove(t){
+  if(!G||G.loc!=='city') return null;
+  t=String(t||'');
+  if(RX.NEG.test(t)||districtMove(t)) return null;
+  const m=t.match(/([가-힣]{2,8}?(?:\s[가-힣]{2,8}?)?)(?:으로|로)\s*(?:간다|가자|가기로|가려|향한다|향해|들어간다|들어서|들른다|들러|이동|걸어간다|걸어가|걸음을\s*옮|발걸음)/)
+    ||t.match(/([가-힣]{2,8}?(?:\s[가-힣]{2,8}?)?)에\s*(?:들른다|들러|들어간다|들어서|도착)/);
+  if(!m) return null;
+  const n=m[1].replace(/^(천천히|조용히|서둘러|곧장|바로|다시|이제|먼저|잠시|일단|슬쩍|몰래)\s+/,'').trim();
+  if(n.length<2||SPOT_STOP.test(n)||SPOT_EXCL.test(n)) return null;
+  return n.slice(0,16);
+}
+function setSpot(name){
+  if(!G||G.loc!=='city'||!name) return;
+  if(G.spot&&G.spot.name===name) return;
+  G.spot={name:String(name).slice(0,16)}; G._yuminHere=false;
+  addLog('sys',`📍 ${G.spot.name} (임시 장소) — 소문·숙박·상점 같은 구역 전용 기능은 구역으로 돌아가야 쓸 수 있습니다.`);
+}
+function spotBlock(){ if(spotOn()){ toast('임시 장소에서는 할 수 없습니다. 먼저 구역으로 돌아가세요'); return true } return false }
 const waitDays=t=>{ const m=String(t).match(/(\d+)\s*일/); if(m) return Math.min(3,Math.max(1,+m[1])); if(/사흘/.test(t)) return 3; if(/이틀|며칠/.test(t)) return 2; return 1 };
 const inRuin=()=>!!G.dungeon&&['dungeon','camp','road'].includes(G.loc);
 const itemIn=t=>G.items.findIndex(it=>it&&String(it).length>=2&&t.includes(it));
@@ -1314,6 +1347,8 @@ const INTENTS=[
    run:()=>{ toast('그곳은 아직 소문으로만 아는 곳이라 갈 수 없습니다'); pend('\n[이동 불가] 플레이어가 말한 곳은 아직 소문으로만 아는 먼 땅이다. 실제로 길을 떠나거나 도착하는 서술은 하지 말고, 그곳을 그리워하거나 소문을 떠올리는 정도로만.',{zeroSupply:true}); return false }},
   {id:'go',confirm:true,label:()=>'🐪 유적 원정 떠나기 (거리만큼 일수 · 하루마다 물·식량 1)',
    when:t=>isTown()&&!(G.loc==='town'&&curTown().west)&&IX.GO.test(t), run:t=>{ addLog('action',t); startExpedition() }},
+  {id:'spot',confirm:true,label:t=>`📍 ${spotMove(t)} (임시 장소)로 이동`,
+   when:t=>!!spotMove(t), run:t=>{ setSpot(spotMove(t)); return false }},   // 장소만 기록하고 이야기로 계속
   {id:'return',confirm:true,label:()=>{ const r=returnRoute(); return `↩ ${r.name}${josa(r.name,'으로','로')} 귀환 (${r.days}일 · 하루마다 물·식량 1)` },
    when:t=>inRuin()&&IX.RET.test(t), run:t=>{ addLog('action',t); returnToCity() }},
   {id:'useItem',
@@ -1357,6 +1392,9 @@ function pickChoice(i){
   if(m){
     if(m.type==='check') return doCheck(c,m.skill,m.dc,'choice');
     if(m.type!=='story'&&runChoiceType(m.type,c)) return;
+    if(m.type==='story'&&G.loc==='city'&&!RX.NEG.test(c)&&!districtMove(c)){   // 구역 밖 장소로 가는 선택지면 임시 장소로 기록
+      const n=spotMove(c); if(n) setSpot(n);
+    }
     return story(c,{src:'choice'});
   }
   act(c,{src:'choice'});
@@ -1366,6 +1404,7 @@ function pickFixed(a){ if(busy||!G) return; story(a,{src:'fixed'}) }
 function act(text,opt={}){
   const t=String(text);
   const it=RX.NEG.test(t)?null:INTENTS.find(x=>{ try{ return x.when(t) }catch(_){ return false } });
+  if(it&&spotOn()&&['go','travel','sleep','home'].includes(it.id)){ spotBlock(); return }   // 임시 장소에서는 구역 전용 행동 불가
   if(it){
     if(opt.src==='free'&&it.confirm&&!opt.confirmed) return showSysChip(t,it);
     if(it.run(t)!==false) return;
@@ -1820,7 +1859,7 @@ on('after',20,()=>{
    ========================================================= */
 function curDistrict(){ return (G&&DISTRICTS[G.district])?G.district:'market' }
 function enterCity(first){
-  G.loc='city'; G.dungeon=null; G._yuminHere=false;
+  G.loc='city'; G.dungeon=null; G._yuminHere=false; G.spot=null;
   G.district=first?'market':'gate';
   if(first){
     addLog('scene',G.openingText||`교역 도시 카스르의 성문을 지나자 향신료와 땀, 낙타의 냄새가 한꺼번에 밀려온다. 당신, ${G.char.name}, ${G.char.origin} 출신의 여행자는 이곳에서 이람의 전설을 쫓기 시작한다.\n\n시장 사람들은 사막 곳곳의 작은 유적에 흩어진 별지도 조각을 모으면 이람으로 가는 길이 열린다고 말한다.`);
@@ -1831,17 +1870,18 @@ function enterCity(first){
   save(); render();
 }
 function goDistrict(k){
-  if(busy||!G||G.loc!=='city'||!DISTRICTS[k]||curDistrict()===k) return;
-  G.district=k; G._yuminHere=false; G.choices=[];
+  if(busy||!G||G.loc!=='city'||!DISTRICTS[k]||(curDistrict()===k&&!G.spot)) return;
+  G.spot=null; G.district=k; G._yuminHere=false; G.choices=[];
   addLog('sys',`${DISTRICTS[k].ic} ${DISTRICTS[k].n}${josa(DISTRICTS[k].n,'으로','로')} 이동했습니다.`);
   if(G.comp&&G.comp.met&&!G.comp.joined&&G.comp.spot===k) addLog('sys','🎵 이곳에서 유민의 모습이 보입니다.');
   save(); render();
 }
 function cityFixedHTML(){
-  const d=curDistrict();
-  const bar=Object.keys(DISTRICTS).map(k=>`<button class="small ${k===d?'primary':''}" ${k===d?'disabled':''} onclick="goDistrict('${k}')">${DISTRICTS[k].ic} ${DISTRICTS[k].n}</button>`).join('');
+  const d=curDistrict(), sp=spotOn();
+  const bar=Object.keys(DISTRICTS).map(k=>`<button class="small ${k===d&&!sp?'primary':''}" ${k===d&&!sp?'disabled':''} onclick="goDistrict('${k}')">${DISTRICTS[k].ic} ${DISTRICTS[k].n}</button>`).join('');
   let a='';
-  if(d==='market') a=`<button onclick="openShop()">🛒 상점 (물·식량·재료)</button><button onclick="strollMarket()">🚶 시장 거리 거닐기</button>`;
+  if(sp) a=`<button class="primary" onclick="goDistrict('${d}')">↩ ${DISTRICTS[d].n}${josa(DISTRICTS[d].n,'으로','로')} 돌아가기</button>`;
+  else if(d==='market') a=`<button onclick="openShop()">🛒 상점 (물·식량·재료)</button><button onclick="strollMarket()">🚶 시장 거리 거닐기</button>`;
   else if(d==='teahouse') a=`<button onclick="cityRumor()">🍵 차를 마시며 소문 듣기 (5)</button>`;
   else if(d==='inn') a=`<button onclick="cityRest()">🛏 여관에서 쉬기 (10)</button>`;
   else if(d==='gate') a=`<button class="primary" onclick="startExpedition()">🐪 유적 원정 떠나기</button><button onclick="openTravel()">🐫 먼 길 떠나기 (와하·천막들·자르한)</button>`;
@@ -1850,16 +1890,17 @@ function cityFixedHTML(){
   if(G.comp.met){
     if(G.comp.joined) a+=`<button onclick="talkYumin()">🎵 유민과 이야기</button>`;
     else{
-      const sp=G.comp.spot, s=YUMIN_SPOTS[sp];
-      if(s&&s.kind==='city') a+=sp===d?`<button onclick="talkYumin()">🎵 유민에게 말 걸기</button>`:`<button onclick="goDistrict('${sp}')">🚶 ${DISTRICTS[sp].n}${josa(DISTRICTS[sp].n,'으로','로')} 유민 찾아가기</button>`;
+      const ys=G.comp.spot, s=YUMIN_SPOTS[ys];
+      if(s&&s.kind==='city') a+=(!sp&&ys===d)?`<button onclick="talkYumin()">🎵 유민에게 말 걸기</button>`:`<button onclick="goDistrict('${ys}')">🚶 ${DISTRICTS[ys].n}${josa(DISTRICTS[ys].n,'으로','로')} 유민 찾아가기</button>`;
       else a+=`<button onclick="toast('유민은 지금 '+yuminWhereText()+'에 있는 것 같습니다. 지도의 🎵 표시를 확인해 보세요.')">🎵 유민 찾기 (지도에서 위치 확인)</button>`;
     }
   }
-  return {mv:bar,mvLbl:`📍 ${DISTRICTS[d].n} · 장소 이동`,ac:a,acLbl:'🧭 행동'};
+  return {mv:bar,mvLbl:sp?`📍 ${esc(G.spot.name)} (임시 장소) · ${DISTRICTS[d].n} 구역 · 장소 이동`:`📍 ${DISTRICTS[d].n} · 장소 이동`,ac:a,acLbl:'🧭 행동'};
 }
-on('context',90,()=>G.loc==='city'?` 지금 있는 곳은 카스르의 「${DISTRICTS[curDistrict()].n}」이다. 장면의 배경과 등장인물을 이 장소에 맞출 것(성문: 대상·경비병·낙타꾼, 찻집: 소문·손님, 여관: 투숙객·여관 주인, 시장: 상인·행인, 오아시스: 우물·그늘·나그네).`:'');
+on('context',90,()=>G.loc==='city'&&!spotOn()?` 지금 있는 곳은 카스르의 「${DISTRICTS[curDistrict()].n}」이다. 장면의 배경과 등장인물을 이 장소에 맞출 것(성문: 대상·경비병·낙타꾼, 찻집: 소문·손님, 여관: 투숙객·여관 주인, 시장: 상인·행인, 오아시스: 우물·그늘·나그네). 카스르의 구역은 시장 거리·찻집·여관·성문·오아시스 가장자리 다섯이다. 구역 밖의 장소(대장간, 사원, 골목 등)로 가는 것도 가능하며 그때는 게임이 '임시 장소'로 기록한다. 소문 듣기·숙박·상점 거래·원정 출발은 구역에서만 가능하다.`:'');
+on('context',90.1,()=>spotOn()?` [임시 장소] 플레이어는 카스르 「${DISTRICTS[curDistrict()].n}」 구역에서 벗어나 「${G.spot.name}」에 있다. 이 장소의 풍경·인물 이야기를 하되, 소문 듣기·숙박·상점 거래·휴식은 구역으로 돌아가야 가능하다 — 이 장면에서 물건을 사고팔거나 쉬는 서술을 성사시키지 말고 effects의 hp·water·food·torch·gold는 0으로 둘 것. 다섯 구역 중 하나로 가는 선택지는 허용한다.`:'');
 function cityRumor(){
-  if(busy) return;
+  if(busy||spotBlock()) return;
   G._yuminHere=false;
   if(G.gold<5) return toast('찻값 금화 5가 필요합니다');
   G.gold-=5;
@@ -1873,14 +1914,14 @@ function cityRumor(){
   tick(); aiTurn('찻집에서 차를 시키고 소문에 귀를 기울인다 (금화 -5)',extra);
 }
 function cityRest(){
-  if(busy) return;
+  if(busy||spotBlock()) return;
   if(G.gold<10) return toast('숙박비 금화 10이 필요합니다');
   G.gold-=10; G.hp=G.maxhp; G.day++; G.time='낮'; G.dayStep=0;
   addLog('sys',`여관에서 하룻밤을 보냈습니다. 체력이 모두 회복되었습니다. (${G.day}일째 아침)`);
   save(); render();
 }
 function strollMarket(){
-  if(busy) return;
+  if(busy||spotBlock()) return;
   G._yuminHere=false;
   if(G.fragments<FRAG_GOAL&&!G.fragMerchant&&(G.merchantSold||0)<2&&G.day>=3&&Math.random()<0.08) G._merchantPending=true;
   tick();
@@ -1924,6 +1965,7 @@ function buyCap(t){
   save(); render(); openShop();
 }
 function openShop(){
+  if(spotBlock()) return;
   const goods=SHOP_GOODS.map(([n,k,p])=>[n,k,['water','food','torch'].includes(k)?priceHere(k):p]).map(([n,k,p])=>`<div class="shop-row"><span>${n} <span class="muted">(보유 ${getQ(k)})</span></span><button class="small" onclick="buy('${k}',${p})">금화 ${p}</button></div>`).join('');
   const capRow=t=>{
     const key=CAP_KEY[t], cap=capOf(key), lv=capLv()[t], tbl=CAP_PRICE[t], max=lv>=tbl.length, price=tbl[lv];
@@ -1954,7 +1996,7 @@ function openShop(){
    11. 거점 — 시설 · 휴식 · 우물 · 저장고 · 연구
    ========================================================= */
 function goHome(){
-  if(busy) return;
+  if(busy||spotBlock()) return;
   if(!has('land')) return openBuild();
   G.loc='home'; G._yuminHere=false; G.choices=[];
   addLog('sys',`거점 「${G.home.name||'오아시스의 집'}」에 도착했습니다.`);
@@ -2170,7 +2212,7 @@ on('facts',70,(o,rules)=>{
    13. 원정 · 사막 길
    ========================================================= */
 async function startExpedition(){
-  if(busy) return;
+  if(busy||spotBlock()) return;
   if(G.loc==='town'&&curTown().west) return toast('서쪽 땅에는 탐사할 유적이 없습니다. 전설을 쫓아 보세요');
   if(G.water<1||G.food<1) return toast('원정에는 물과 식량이 최소 1씩 필요합니다');
   const resume=G._resumeRuin!=null&&G.pausedRuins&&G.pausedRuins[G._resumeRuin];
@@ -2999,12 +3041,12 @@ function npcWhereText(name){ const w=npcWhere(name); if(w.startsWith('town:')) r
 on('applied',65,e=>{ (Array.isArray(e.relations)?e.relations:[]).forEach(x=>{ const nm=x&&x.name&&String(x.name).trim().slice(0,30); if(nm&&nm!=='유민'&&G.rel[nm]) G.rel[nm].where=placeKey() }) });
 on('facts',85,o=>{ const n=Object.keys(G.rel||{}).filter(n=>n!=='유민'&&G.rel[n].where).slice(-8); if(n.length) o.인물위치=n.map(k=>`${k}: ${npcWhereText(k)}`).join(' / ') });
 function canMeetHere(name){
-  if(name!=='유민'){ const w=npcWhere(name); return G.loc==='city'?w==='city:'+curDistrict():G.loc==='home'?w==='home':G.loc==='town'?w==='town:'+G.town:false }
+  if(name!=='유민'){ const w=npcWhere(name); return G.loc==='city'?(!spotOn()&&w==='city:'+curDistrict()):G.loc==='home'?w==='home':G.loc==='town'?w==='town:'+G.town:false }
   const c=G.comp; if(!c||!c.met) return false;
   if(c.joined||G._yuminHere) return true;
   updateYuminSpot();
   const s=YUMIN_SPOTS[c.spot]; if(!s) return false;
-  if(G.loc==='city') return s.kind==='city'&&c.spot===curDistrict();
+  if(G.loc==='city') return !spotOn()&&s.kind==='city'&&c.spot===curDistrict();
   if(G.loc==='home') return has('guest')&&c.spot==='guestroom';
   if(G.loc==='town') return s.town===G.town;
   return false;
@@ -3997,7 +4039,7 @@ function tripDests(){
   return out;
 }
 function openTravel(){
-  if(!isTown()) return;
+  if(!isTown()||spotBlock()) return;
   const rows=tripDests().map(d=>{
     const n=travelNeed(travelDays(curPos(),d.pos)), ok=G.water+G.food>0;
     return `<div class="lex"><div class="h"><b>${d.ic} ${d.name}</b><span class="cat">${n.days}일 거리${d.kind==='town'&&!(G.townVisited||[]).includes(d.key)?' · 처음':''}</span></div>
@@ -5128,6 +5170,7 @@ function renderLogAll(){ document.getElementById('logInner').innerHTML=''; G.log
 
 function render(){
   if(!G) return;
+  if(G.spot&&G.loc!=='city') G.spot=null;   // 카스르를 떠나면 임시 장소는 사라짐
   rivalTick(); fragXpCheck();
   clearStaleEvents();
   relicSync();
@@ -5154,7 +5197,7 @@ function render(){
   run('render');
 }
 function whereText(){
-  if(G.loc==='city') return `카스르 — ${DISTRICTS[curDistrict()].n}`;
+  if(G.loc==='city') return spotOn()?`카스르 — 📍 ${G.spot.name} (임시 장소)`:`카스르 — ${DISTRICTS[curDistrict()].n}`;
   if(G.loc==='town') return `${curTown().ic} ${curTown().n}`;
   if(G.loc==='home') return `거점 — ${G.home.name||'오아시스의 집'}`;
   if(G.loc==='road') return outsideRuin()?`${G.dungeon.name} › 입구 밖 사막`:'사막 길';
@@ -5409,7 +5452,7 @@ function locPanel(){
   const cv=caravanHere()?`<li>🐫 ${esc(G.caravan.name)}이(가) 쉬어 가는 중</li>`:'';
   if(G.loc==='city'){
     const land=FAC.find(f=>f.id==='land');
-    t='카스르'; sub=`📍 ${DISTRICTS[curDistrict()].n}`;
+    t='카스르'; sub=spotOn()?`📍 ${G.spot.name} (임시 장소)`:`📍 ${DISTRICTS[curDistrict()].n}`;
     body=`<ul class="locl"><li>🛒 시장</li><li>🍵 찻집</li><li>🛏 여관</li><li>🏠 ${has('land')?esc(nm):(canPay(land.cost)?`거점 부지 (구입 가능 · 🪙${land.cost.gold})`:`거점 부지 (금화 부족 · 🪙${G.gold}/${land.cost.gold})`)}</li></ul>`;
   }else if(G.loc==='town'){
     const tw=curTown(); t=`${tw.ic} ${tw.n}`; sub=tw.port?'나루 · 섬으로 가는 배':`카스르에서 ${townDays(G.town)}일 거리`;
@@ -5443,7 +5486,7 @@ function renderMapPanel(){
   box.classList.toggle('collapsed',col);
   document.getElementById('mapToggle').textContent=col?'🗺 지도 펼치기':'지도 접기';
   updateYuminSpot();
-  const sig=JSON.stringify([G.loc,G.nextPos,G.mapDone,(G.pausedRuins||[]).map(r=>r.name),G.discovered,G.actDone,has('land'),G.home.name,Object.keys(G.home.built),G.fragments,G.district,G.town,G.base,G.act,G.cities&&G.cities.map(c=>c.found),
+  const sig=JSON.stringify([G.loc,G.nextPos,G.mapDone,(G.pausedRuins||[]).map(r=>r.name),G.discovered,G.actDone,has('land'),G.home.name,Object.keys(G.home.built),G.fragments,G.district,G.spot,G.town,G.base,G.act,G.cities&&G.cities.map(c=>c.found),
     G.comp&&[G.comp.met,G.comp.spot,G.comp.joined],G.caravan&&G.caravan.here,
     G.dungeon?[G.dungeon.name,G.dungeon.pos,G.dungeon.cur,G.dungeon.depth,G.dungeon.rooms.map(r=>[r.visited,r.fragTaken,r.exhausted])]:null]);
   if(sig===_sigM) return; _sigM=sig;

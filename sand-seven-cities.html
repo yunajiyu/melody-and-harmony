@@ -69,6 +69,8 @@ label{display:block;font-weight:500;margin:12px 0 4px}
 #log .inner{max-width:860px;margin:0 auto}
 .entry{margin:0 0 14px}
 .entry.scene p{margin:0 0 8px;font-family:'Gowun Batang',serif;font-size:16px}
+.entry.scene strong{font-weight:700;background:linear-gradient(transparent 62%,rgba(214,170,80,.3) 0)}
+.entry.scene em{font-style:italic;opacity:.92}
 .entry.action{color:var(--accent2);font-weight:500;font-size:14px}
 .entry.action::before{content:'▸ '}
 .entry.sys{color:var(--muted);font-size:13px;border-left:3px solid var(--line);padding-left:8px}
@@ -924,6 +926,7 @@ const SYS_BASE=`너는 중동풍 텍스트 탐험 게임 「모래 아래의 도
 규칙:
 - 반드시 한국어, 플레이어를 '당신'으로 부르는 2인칭 현재형 서술.
 - 서술은 2~4문단, 350~700자. 감각적 묘사(빛, 냄새, 소리, 열기)를 쓰되 장황하지 않게.
+- 서술 안에서 중요한 부분(핵심 단서·고유명사·얻거나 잃은 물건·분명한 위험·중대한 결정)은 **이렇게 굵게**, 소리·속삭임·속마음·강조는 *이렇게 기울여* 표시한다. 한 문단에 많아야 한두 곳, 남발하지 않는다. 별표(*) 표기 외의 마크다운(제목·목록·인용)은 쓰지 않고, narration 외의 필드(choices·chronicle 등)에는 별표를 쓰지 않는다.
 - 플레이어의 출신, 특성, 배경 이야기를 자연스럽게 엮어라.
 - 숫자 상태(체력, 물 등)는 게임 코드가 관리한다. 너는 effects로 변화만 제안하라.
 - 숨겨진 진실은 [숨겨진 진실] 항목의 지시를 따른다. 결말 전에는 절대 직접 밝히지 말고, 단서와 소문으로만 흘려라.
@@ -1086,7 +1089,7 @@ function normalizeTurn(r){
     const meta={};
     r.choices=r.choices.map(c=>{
       if(c&&typeof c==='object'){
-        const text=fixCalling(String(c.text||'').trim()); if(!text) return null;
+        const text=fixCalling(stripMd(String(c.text||'')).trim()); if(!text) return null;
         const type=CHOICE_TYPES.includes(c.type)?c.type:'story';
         const m={type};
         if(type==='check'){ m.skill=SK[c.skill]?c.skill:'sur'; m.dc=DCV[c.dc]?c.dc:'normal' }
@@ -1126,14 +1129,14 @@ async function aiTurn(action,extra='',showAction=true){
   if(!ok){ res=fallbackTurn(T.action); G.choiceMeta={} }
   T.res=res;
   addLog('scene',res.narration);
-  G.recent.push({role:'scene',text:res.narration});
+  G.recent.push({role:'scene',text:stripMd(res.narration)});
   applyEffects(res.effects||{},T);
   G._evtTurn=false;
   if(G.relEvt){ if(G._relSetup) G._relSetup=false; else if(++G.relEvt.turns>=4){ getRel(G.relEvt.name).cool=G.day+1; G.relEvt=null } }
-  if(res.chronicle&&String(res.chronicle).trim()) G.chronicle.push({day:G.day,text:String(res.chronicle).trim()});
+  if(res.chronicle&&String(res.chronicle).trim()) G.chronicle.push({day:G.day,text:stripMd(String(res.chronicle).trim())});
   G.choices=(res.choices||[]).slice(0,4);
   busy=false;
-  if(ok) queueLex(res.narration,T.action);
+  if(ok) queueLex(stripMd(res.narration),T.action);
   await maybeSummarize();
   checkState();
   run('after',T);
@@ -5174,9 +5177,14 @@ function addLog(type,text){
   if(document.getElementById('game').classList.contains('hidden')) return;
   appendLogEl({type,text}); scrollLog();
 }
+/* 서술 속 **굵게**·*기울임* 표시를 안전하게 HTML로: 먼저 이스케이프한 뒤 별표 표시만 태그로 바꾸고, 짝이 안 맞는 별표는 지움 */
+function mdLite(t){
+  return esc(t).replace(/\*\*([^*\n]+?)\*\*/g,'<strong>$1</strong>').replace(/\*([^*\n]+?)\*/g,'<em>$1</em>').replace(/\*+/g,'');
+}
+const stripMd=t=>String(t==null?'':t).replace(/\*+/g,'');   // 판정·사전·요약 같은 내부 처리용: 별표 표시 제거
 function appendLogEl(l){
   const el=document.createElement('div'); el.className='entry '+l.type;
-  if(l.type==='scene') el.innerHTML=String(l.text).split(/\n+/).filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join('');
+  if(l.type==='scene') el.innerHTML=String(l.text).split(/\n+/).filter(Boolean).map(p=>`<p>${mdLite(p)}</p>`).join('');
   else el.textContent=l.text;
   document.getElementById('logInner').appendChild(el);
 }

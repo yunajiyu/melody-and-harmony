@@ -825,6 +825,14 @@ const RX={
   BUY:/(산다|사다|사들|사 둔|구입|구매|채운다|채워|보충|흥정|값을\s*치)/,
 };
 
+/* 구매 행동인지: '채운다·채워' 같은 말은 상점에서는 구매지만, 우물·샘 앞에서 산다·구입 같은 말 없이 쓰이면 공짜 물 긷기 */
+const BUY_VERB=/(산다|사다|사들|사 둔|구입|구매|흥정|값을\s*치)/;
+function isBuyText(t){
+  t=String(t||''); if(!RX.BUY.test(t)) return false;
+  if(NEED_RX.SOURCE.test(t)&&!BUY_VERB.test(t)) return false;
+  return true;
+}
+
 /* =========================================================
    4. 엔진
    ========================================================= */
@@ -1628,7 +1636,7 @@ on('effects',10,(e,{T})=>{
 on('effects',20,(e,{T})=>{
   if(!isWild()) return;
   const narr=lastScene(), blocked=[];
-  const buying=+e.gold<0||RX.BUY.test(lastAction());
+  const buying=+e.gold<0||isBuyText(lastAction());
   if(+e.water>0&&!T.flags.srcOK&&!buying&&!NEED_RX.GAIN_W.test(narr)){ e.water=0; blocked.push('물') }
   if(+e.food>0&&!buying&&!NEED_RX.GAIN_F.test(narr)){ e.food=0; blocked.push('식량') }
   const usedItem=Array.isArray(e.items_remove)&&e.items_remove.length>0;
@@ -1656,6 +1664,7 @@ on('effects',21,(e,ctx)=>{
 /* 30: 시간이 이미 처리된 턴 · 소지품 이름 근사 매칭 */
 on('effects',30,(e,{T})=>{
   if(T.flags.zeroSupply){ e.water=0; e.food=0 }
+  if(T.flags.noMoney) e.gold=0
   if(Array.isArray(e.items_remove)){
     const used=new Set();
     e.items_remove=e.items_remove.map(n=>{
@@ -1669,7 +1678,7 @@ on('effects',30,(e,{T})=>{
 });
 /* 40: 물·식량·횃불 구매는 게임 정가로 (유적 밖) */
 on('effects',40,(e,ctx)=>{
-  if(G.loc==='dungeon'||!(+e.gold<0||RX.BUY.test(lastAction()))) return;
+  if(G.loc==='dungeon'||!(+e.gold<0||isBuyText(lastAction()))) return;
   const U=k=>priceHere(k);
   const gains={};
   ['water','food','torch'].forEach(k=>{ const v=Math.round(+e[k]||0); if(v>0) gains[k]=v });
@@ -1761,7 +1770,7 @@ on('choices',60,arr=>{
   const out=[];
   arr.forEach(c=>{
     c=String(c);
-    if(!RX.BUY.test(c)){ out.push(c); return }
+    if(!isBuyText(c)){ out.push(c); return }
     const k=['water','food','torch'].find(x=>RES[x].test(c));
     if(!k){ out.push(c); return }
     const room=Math.max(0,capOf(k)-G[k]);
@@ -2941,8 +2950,20 @@ function fillWaterSrc(viaStory){
 }
 /* "물을 긷는다" 같은 글·선택지로 수원에서 물을 채우려 하면 실제로 물통을 채움 (수원이 지금 곁에 있을 때만) */
 function waterFillIntent(t){
-  if(!G||!G.waterSrc||G.waterSrc.used||RX.NEG.test(String(t))) return false;
-  if(!/물을?\s*(긷|길어|퍼\s*올|채운|채워|담)/.test(String(t))) return false;
+  t=String(t||'');
+  if(!G||RX.NEG.test(t)||!/물을?\s*(?:가득\s*|듬뿍\s*|한\s*가득\s*)?(긷|길어|퍼\s*올|채운|채워|담)/.test(t)) return false;
+  clearStaleEvents();   // 다른 곳으로 옮긴 뒤 남은 낡은 수원은 먼저 지움
+  const townish=G.loc==='city'||G.loc==='town';
+  // AI가 수원 사건을 내지 않았어도, 도시·마을에서 우물·샘에서 물을 채운다는 글이면 공용 우물로 처리 (산다·구입이 들어가면 구매)
+  if(!G.waterSrc&&townish&&NEED_RX.SOURCE.test(t)&&!BUY_VERB.test(t))
+    G.waterSrc={name:'공용 우물',loc:G.loc,room:null,dist:G.loc==='city'?G.district:null,town:G.loc==='town'?G.town:null,used:false};
+  if(!G.waterSrc||G.waterSrc.used) return false;
+  if(townish&&G.cityWaterDay===G.day){   // 오늘 이미 채웠으면 더 채우지 못하고, AI가 물을 주지도 못하게
+    toast('오늘은 이미 공용 우물에서 물을 채웠습니다');
+    pend(' [물 채움 불가] 플레이어는 오늘 이미 이 우물에서 물을 채웠다. 더 채우지 못한다. effects의 water·food·gold·hp는 0.',{zeroSupply:true,noMoney:true});
+    G.waterSrc=null;
+    return true;
+  }
   const ok=fillWaterSrc(true);
   if(ok) pend(' [물 채움 처리 완료] 코드가 이미 플레이어의 물통을 가득 채웠다. 물 긷는 장면만 짧게 서술하고 effects의 water·hp는 0.',{zeroSupply:true});
   return ok;

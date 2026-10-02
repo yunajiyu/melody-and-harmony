@@ -301,7 +301,7 @@ label{display:block;font-weight:500;margin:12px 0 4px}
       <button onclick="openGuide()">📖 게임 가이드</button>
       <button onclick="openSettings()">AI 설정</button>
       <button onclick="importSave()">저장 파일 불러오기</button>
-      <button class="small themeBtn" onclick="cycleTheme()">🌓 자동</button>
+      <button class="small themeBtn" onclick="cycleTheme()">🌓 자동</button><button class="small sfxBtn" onclick="cycleSfx()">🔊 보통</button>
     </div>
     <p class="muted" style="margin-top:20px" id="aiStatus"></p>
   </div>
@@ -347,7 +347,7 @@ label{display:block;font-weight:500;margin:12px 0 4px}
       </div>
       <div class="where" id="where"></div>
       <div id="topExtra">
-        <button class="small themeBtn" onclick="cycleTheme()">🌓 자동</button>
+        <button class="small themeBtn" onclick="cycleTheme()">🌓 자동</button><button class="small sfxBtn" onclick="cycleSfx()">🔊 보통</button>
         <div id="fontCtl"><span>글자</span><button class="small" aria-label="글자 작게" title="글자 작게" onclick="setFontScale(fontScale-0.1)">가−</button><span id="fsLabel" title="눌러서 100%로 되돌리기" onclick="setFontScale(1)">100%</span><button class="small" aria-label="글자 크게" title="글자 크게" onclick="setFontScale(fontScale+0.1)">가+</button></div>
         <div id="usageChip" onclick="openUsage()">💰 사용량</div>
       </div>
@@ -789,6 +789,7 @@ function askConfirm(msg,okLabel='확인'){
   });
 }
 function toast(msg){
+  try{ sfx(/부족|없습니다|할 수 없|가득|이미|모자|못합니다|불가/.test(msg)?'error':'notify') }catch(e){}
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
   clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2600);
 }
@@ -1516,6 +1517,7 @@ function rollCheck(skill,dc,text){
   let a=d(), c=d(), tot=a+c+st+bo.b, rr='';
   if(tot<DC-2&&hasTrait('진의 총애')&&G._jinDay!==G.day){ G._jinDay=G.day; const a2=d(),c2=d(); rr=` → ✨ 진의 총애로 다시 굴림 ${a2}+${c2}`; a=a2; c=c2; tot=a+c+st+bo.b }
   const res=tot>=DC?'success':tot>=DC-2?'partial':'fail';
+  try{ sfx('dice'); sfx(res,0.4) }catch(e){}
   try{ cityOnCheck(skill,res) }catch(e){}
   rollCheck.last=res;   // 결과에 따라 갈리는 기능(이람 석판 등)이 읽음
   const label={success:'성공',partial:'부분 성공',fail:'실패'}[res];
@@ -1942,6 +1944,7 @@ function strollMarket(){
    ========================================================= */
 function getQ(k){ return k.startsWith('i_')?G.items.filter(x=>x===k.slice(2)).length:k.startsWith('m_')?G.mat[k.slice(2)]:G[k] }
 function buy(k,p){
+  try{ if(G.gold>=p) sfx('coin') }catch(e){}
   if(['water','food','torch'].includes(k)&&G[k]>=capOf(k)) return toast(`${CAP_NAME[k==='water'?'w':k==='food'?'f':'t']}이(가) 가득 찼습니다 (${capOf(k)}/${capOf(k)})`);
   if(G.gold<p) return toast('금화가 부족합니다');
   G.gold-=p;
@@ -2020,6 +2023,7 @@ function build(id){
   if(busy) return;
   const f=FAC.find(x=>x.id===id);
   if(!canPay(f.cost)) return toast('재료가 부족합니다');
+  sfx('build');
   pay(f.cost); G.home.built[id]=true;
   G.chronicle.push({day:G.day,text:id==='land'?'카스르 외곽 오아시스에 작은 거점을 마련했다':`거점에 ${f.n}을(를) 지었다`});
   toast(`🏠 ${f.n} 완성`);
@@ -4060,6 +4064,7 @@ function beginTrip(dest,days,opt){
   const ev=opt.event||(!dest.sea&&n.days>=2&&Math.random()<TRIP_EVENT);
   const first=!ev?n.days:n.days>=2?Math.floor(n.days/2):0;
   const n1={days:first,water:Math.round(n.water*first/n.days),food:first,feed:n.feed};
+  sfx('travel');
   if(opt.action!==false) addLog('action',opt.action||`${dest.name}${josa(dest.name,'으로','로')} 길을 떠난다`);
   dest.base=dest.base!==undefined?dest.base:base;
   const cost=travelPay(n1,opt.keepFed);
@@ -4080,6 +4085,7 @@ async function continueTrip(){
   return arriveDest(t.dest);
 }
 function arriveDest(d){
+  sfx('arrive');
   G.trip=null; G.nextPos=null;
   if(d.ret){   // 유적에서 돌아옴 — 조용히 도착 (예전 귀환과 같음)
     const mc=mountCarry(); if(mc) addLog('fx',mc);
@@ -4887,6 +4893,7 @@ function fightRound(text,extra){
 /* 결말: win · lose · flee(적이 물러남) · escape(내가 빠져나옴) · yield(조각을 내줌) */
 function fightEnd(result,text,extra){
   const F=G.fight, R=G.rival, kind=F.kind; G.fight=null;
+  sfx(result==='win'||result==='flee'?'win':result==='lose'?'lose':'notify');
   const loot=[], d=G.dungeon;
   if(result==='win'||result==='flee'){
     R.prog=Math.max(0,R.prog-(result==='win'?15:5));
@@ -5156,6 +5163,7 @@ on('context',92,()=>{
    24. 화면 — 기록 · 상단 상태 · 선택지 · 고정 버튼
    ========================================================= */
 function addLog(type,text){
+  try{ sfxLog(type,text) }catch(e){}
   G.log.push({type,text});
   if(G.log.length>120) G.log.splice(0,G.log.length-120);
   if(document.getElementById('game').classList.contains('hidden')) return;
@@ -5172,6 +5180,8 @@ function renderLogAll(){ document.getElementById('logInner').innerHTML=''; G.log
 
 function render(){
   if(!G) return;
+  if(_sfxDay!=null&&G.day>_sfxDay) sfx('newday');
+  _sfxDay=G.day;
   if(G.spot&&G.loc!=='city') G.spot=null;   // 카스르를 떠나면 임시 장소는 사라짐
   rivalTick(); fragXpCheck();
   clearStaleEvents();
@@ -5649,6 +5659,7 @@ function screenMenuHTML(){
   const custom=cur==='custom'?`<div class="row" style="gap:6px;align-items:center;margin-top:6px"><input id="narrMin" type="number" min="1" max="40" value="${c.s[0]}" style="width:64px" onchange="setNarrCustom()" aria-label="최소 문장 수"><span class="muted">~</span><input id="narrMax" type="number" min="1" max="40" value="${c.s[1]}" style="width:64px" onchange="setNarrCustom()" aria-label="최대 문장 수"><span class="muted">문장</span></div>`:'';
   return `<div class="sbtn" style="margin-bottom:6px">
     <button class="themeBtn" onclick="cycleTheme()">${THEME_LABEL[themeMode]}</button>
+    <button class="sfxBtn" onclick="cycleSfx()">${sfxLabel()}</button>
     <div class="row" style="justify-content:space-between;align-items:center"><span class="muted">글자 크기</span>
       <span style="display:inline-flex;align-items:center;gap:6px"><button class="small" onclick="setFontScale(fontScale-0.1)">가−</button><b class="fsLabelM" style="min-width:42px;text-align:center">${Math.round(fontScale*100)}%</b><button class="small" onclick="setFontScale(fontScale+0.1)">가+</button></span></div>
     <div><label class="muted" style="display:block;margin-bottom:4px">서술 분량</label><select onchange="setNarrLen(this.value)" aria-label="서술 분량">${opts}</select>${custom}<p class="muted" style="margin:4px 0 0">길수록 출력 토큰과 비용이 늘어납니다.</p></div>
@@ -5904,7 +5915,9 @@ function openGuide(){
     ${h3('거점 꾸미기')}
     ${row('집 단계','지은 시설 개수에 따라 집 그림이 4단계로 바뀜 (0~2 / 3~5 / 6~8 / 전부)')}
     ${row('가구·장식','카스르 시장(가구) · 마을 상점(그 마을 특산 장식)에서 사면 영구 보유. 거점에서 🏡 거점 꾸미기를 열어 자유롭게 놓고 치울 수 있음 (끌어서 이동). 효과는 없고 외형만 바뀜')}
-    ${row('유물 진열','보유한 유물 등급별로 진열대를 놓을 수 있음 (팔거나 쓰면 진열도 사라짐)')}`);
+    ${row('유물 진열','보유한 유물 등급별로 진열대를 놓을 수 있음 (팔거나 쓰면 진열도 사라짐)')}
+    ${h3('효과음')}
+    ${row('🔊 효과음','버튼 누르기·판정(주사위와 결과)·구매와 판매·피해와 회복·별지도 조각과 유물 획득·성장·여행 출발과 도착·건설·전투 승패·하루가 바뀔 때 짧은 소리가 남. 상단의 🔊 버튼으로 끔 → 작게 → 보통 → 크게 (브라우저에 저장). 브라우저 규칙상 화면을 한 번 누르기 전에는 소리가 나지 않음')}`);
 }
 
 
@@ -6077,6 +6090,94 @@ function buyDecor(id){
   addLog('fx',`🏡 ${d.n}${josa(d.n,'을','를')} 샀습니다 (금화 -${d.price})`);
   save(); render(); openShop();
 }
+
+/* =========================================================
+   37. 효과음 — 파일 없이 Web Audio로 만든 짧은 소리
+   - sfx('이름') 하나로 재생. 브라우저는 사용자가 한 번 누른 뒤부터 소리를 허용하므로 첫 클릭 전에는 조용함
+   - 음량: 끔 · 작게 · 보통 · 크게 (상단 🔊 버튼, 브라우저에 저장)
+   - 나중에 실제 효과음 파일로 바꾸려면 SFX[이름]만 파일 재생으로 교체하면 됨
+   ========================================================= */
+const SFX_LV=[['끔',0],['작게',0.3],['보통',0.6],['크게',1]];
+let _ac=null, _master=null, _sfxDay=null, _sfxLast={};
+function sfxVol(){ const v=SET.sfxVol; return v==null?0.6:+v }
+function sfxLabel(){ const v=sfxVol(), l=SFX_LV.find(x=>x[1]===v)||SFX_LV[2]; return (v?'🔊 ':'🔇 ')+l[0] }
+function updateSfxBtn(){ document.querySelectorAll('.sfxBtn').forEach(b=>{ b.textContent=sfxLabel(); b.title='효과음 크기 바꾸기 (끔 → 작게 → 보통 → 크게)' }); if(_master) _master.gain.value=sfxVol() }
+function cycleSfx(){
+  const i=SFX_LV.findIndex(x=>x[1]===sfxVol());
+  SET.sfxVol=SFX_LV[(i+1)%SFX_LV.length][1]; saveSettings(); updateSfxBtn();
+  sfx('coin');
+}
+function sfxCtx(){
+  if(!_ac){
+    const C=window.AudioContext||window.webkitAudioContext; if(!C) return null;
+    _ac=new C(); _master=_ac.createGain(); _master.gain.value=sfxVol(); _master.connect(_ac.destination);
+  }
+  if(_ac.state==='suspended') _ac.resume();
+  return _ac;
+}
+/* 음 하나: 시작 t, 길이 d, 파형, 세기 g, 끝 주파수 f2(있으면 미끄러짐) */
+function tone(c,t,f,d,type,g,f2){
+  const o=c.createOscillator(), a=c.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  a.gain.setValueAtTime(0.0001,t); a.gain.exponentialRampToValueAtTime(g,t+0.008); a.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(a); a.connect(_master); o.start(t); o.stop(t+d+0.02);
+}
+/* 잡음 한 번: 주사위·망치·바람 같은 소리 */
+function noise(c,t,d,g,type,f,f2){
+  const n=Math.max(1,Math.floor(c.sampleRate*d)), buf=c.createBuffer(1,n,c.sampleRate), ch=buf.getChannelData(0);
+  for(let i=0;i<n;i++) ch[i]=Math.random()*2-1;
+  const s=c.createBufferSource(); s.buffer=buf;
+  const fl=c.createBiquadFilter(); fl.type=type||'bandpass'; fl.frequency.setValueAtTime(f||1500,t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t+d);
+  const a=c.createGain(); a.gain.setValueAtTime(g,t); a.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  s.connect(fl); fl.connect(a); a.connect(_master); s.start(t);
+}
+const SFX={
+  click:(c,t)=>tone(c,t,1200,0.03,'square',0.05,600),
+  notify:(c,t)=>tone(c,t,880,0.09,'sine',0.07),
+  error:(c,t)=>{ tone(c,t,220,0.09,'square',0.07); tone(c,t+0.11,180,0.12,'square',0.07) },
+  scene:(c,t)=>{ tone(c,t,660,0.18,'sine',0.035); tone(c,t+0.06,990,0.2,'sine',0.025) },
+  coin:(c,t)=>{ tone(c,t,988,0.07,'triangle',0.12); tone(c,t+0.07,1319,0.2,'triangle',0.12) },
+  spend:(c,t)=>{ tone(c,t,1319,0.07,'triangle',0.1); tone(c,t+0.07,988,0.16,'triangle',0.1) },
+  dice:(c,t)=>[0,0.06,0.12,0.19,0.27].forEach(x=>noise(c,t+x,0.04,0.12,'bandpass',2200+Math.random()*1200)),
+  success:(c,t)=>[523,659,784].forEach((f,i)=>tone(c,t+i*0.09,f,0.2,'triangle',0.13)),
+  partial:(c,t)=>{ tone(c,t,523,0.14,'triangle',0.11); tone(c,t+0.13,466,0.2,'triangle',0.11) },
+  fail:(c,t)=>tone(c,t,240,0.3,'sawtooth',0.1,90),
+  hurt:(c,t)=>{ noise(c,t,0.16,0.18,'lowpass',500); tone(c,t,130,0.18,'sine',0.18,55) },
+  heal:(c,t)=>{ tone(c,t,523,0.3,'sine',0.1,784); tone(c,t+0.15,1046,0.2,'sine',0.07) },
+  water:(c,t)=>[0,0.09,0.17].forEach((x,i)=>tone(c,t+x,600+i*150,0.08,'sine',0.09,1000+i*200)),
+  fragment:(c,t)=>[784,988,1175,1568].forEach((f,i)=>tone(c,t+i*0.07,f,0.25,'triangle',0.11)),
+  relic:(c,t)=>[523,659,784,1046,1318].forEach((f,i)=>tone(c,t+i*0.1,f,0.3,'triangle',0.11)),
+  levelup:(c,t)=>{ [392,523,659,784].forEach((f,i)=>tone(c,t+i*0.1,f,0.22,'triangle',0.12)); [523,659,784].forEach(f=>tone(c,t+0.45,f,0.5,'triangle',0.08)) },
+  travel:(c,t)=>noise(c,t,0.6,0.09,'bandpass',400,1400),
+  arrive:(c,t)=>{ tone(c,t,523,0.14,'triangle',0.1); tone(c,t+0.14,659,0.28,'triangle',0.1) },
+  newday:(c,t)=>{ tone(c,t,880,0.7,'sine',0.08); tone(c,t,1760,0.35,'sine',0.04) },
+  build:(c,t)=>[0,0.15,0.3].forEach(x=>{ noise(c,t+x,0.08,0.2,'lowpass',900); tone(c,t+x,200,0.09,'square',0.08,120) }),
+  win:(c,t)=>{ [523,659,784,1046].forEach((f,i)=>tone(c,t+i*0.09,f,0.22,'triangle',0.12)); [523,784,1046].forEach(f=>tone(c,t+0.4,f,0.45,'triangle',0.08)) },
+  lose:(c,t)=>[392,330,262].forEach((f,i)=>tone(c,t+i*0.16,f,0.3,'sawtooth',0.08)),
+};
+function sfx(name,delay){
+  if(!sfxVol()||!SFX[name]) return;
+  const now=Date.now(); if(_sfxLast[name]&&now-_sfxLast[name]<70) return; _sfxLast[name]=now;   // 같은 소리는 연달아 겹치지 않게
+  try{ const c=sfxCtx(); if(c) SFX[name](c,c.currentTime+(delay||0)) }catch(e){}
+}
+/* 기록(addLog)의 효과 줄에서 알맞은 소리를 고름 — 위에서부터 처음 맞는 것 하나 */
+function sfxLog(type,text){
+  if(type==='scene') return sfx('scene');
+  if(type!=='fx') return;
+  const t=String(text||'');
+  if(/★ 별지도 조각/.test(t)) return sfx('fragment');
+  if(/🏺.*얻었습니다/.test(t)) return sfx('relic');
+  if(/💪|❤ 최대 체력|성장 포인트/.test(t)) return sfx('levelup');
+  if(/체력 -|🩸|목이 타들|허기가|🌑|차오른 물|길을 잃음|빼앗김|낚아챘/.test(t)) return sfx('hurt');
+  if(/금화 \+|🪙.*\+|환불/.test(t)) return sfx('coin');
+  if(/금화 -|배 삯|통행세|🪙.*-|정가 결제|확장 —/.test(t)) return sfx('spend');
+  if(/체력 \+|정원의 대추/.test(t)) return sfx('heal');
+  if(/💧.*(채웠|\+)/.test(t)) return sfx('water');
+  sfx('notify');
+}
+document.addEventListener('click',ev=>{ const b=ev.target&&ev.target.closest&&ev.target.closest('button'); if(b&&!b.disabled&&!b.classList.contains('sfxBtn')) sfx('click') },true);
+updateSfxBtn();
 
 /* =========================================================
    29. 시작 · 캐릭터 만들기 · 저장 파일

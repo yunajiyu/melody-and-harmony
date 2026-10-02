@@ -1395,6 +1395,7 @@ function pickChoice(i){
   const m=metaOf(c);
   if(m){
     if(m.type==='check') return doCheck(c,m.skill,m.dc,'choice');
+    if(m.type==='story'&&waterFillIntent(c)) return story(c,{src:'choice'});
     if(m.type!=='story'&&runChoiceType(m.type,c)) return;
     if(m.type==='story'&&G.loc==='city'&&!RX.NEG.test(c)){   // 선택지 글이 다른 곳으로 가는 것이면 실제 장소도 옮김
       const k=districtMove(c);
@@ -1409,6 +1410,7 @@ function pickFixed(a){ if(busy||!G) return; story(a,{src:'fixed'}) }
 
 function act(text,opt={}){
   const t=String(text);
+  if(waterFillIntent(t)) return story(t,opt);   // 수원 앞에서 물을 긷는 글 → 실제로 채운 뒤 이야기로
   const it=RX.NEG.test(t)?null:INTENTS.find(x=>{ try{ return x.when(t) }catch(_){ return false } });
   if(it&&spotOn()&&['go','travel','sleep','home'].includes(it.id)){ spotBlock(); return }   // 임시 장소에서는 구역 전용 행동 불가
   if(it){
@@ -2913,30 +2915,44 @@ function caravanTalk(){
 }
 /* AI가 낸 사건 → 버튼 */
 on('after',60,T=>{
-  const ev=T.res&&T.res.event; if(!ev||!isWild()) return;
-  if(ev.type==='water_source'){
-    G.waterSrc={name:ev.name||'물이 있는 곳',loc:G.loc,room:G.dungeon?G.dungeon.cur:null,used:false};
-    addLog('sys',`💧 「${G.waterSrc.name}」 — 물을 채울 수 있습니다 (💧 버튼)`);
+  const ev=T.res&&T.res.event; if(!ev) return;
+  const townish=G.loc==='city'||G.loc==='town';   // 도시·마을의 공용 우물도 물 채우기 버튼으로 (하루 한 번)
+  if(ev.type==='water_source'&&(isWild()||townish)){
+    G.waterSrc={name:ev.name||'물이 있는 곳',loc:G.loc,room:G.dungeon?G.dungeon.cur:null,dist:G.loc==='city'?G.district:null,town:G.loc==='town'?G.town:null,used:false};
+    addLog('sys',`💧 「${G.waterSrc.name}」 — 물을 채울 수 있습니다 (💧 버튼${townish?' · 하루 한 번':''})`);
   }
+  if(!isWild()) return;
   if(ev.type==='merchant'&&!(G.caravan&&G.caravan.here)){
     const r=()=>Math.floor(Math.random()*3);
     G.caravan={here:true,loc:G.loc==='camp'?'road':G.loc,room:G.dungeon&&G.loc==='dungeon'?G.dungeon.cur:null,day:G.day,name:ev.name||'떠돌이 상인',stock:{water:3+r(),food:3+r(),torch:1+r()},talked:true};
     addLog('sys',`🐫 「${G.caravan.name}」과(와) 거래할 수 있습니다 (🐫 버튼 · 물·식량 🪙${PRICE_ROAD.water} · 횃불 🪙${PRICE_ROAD.torch})`);
   }
 });
-function fillWaterSrc(){
-  const w=G.waterSrc; if(busy||!w||w.used) return;
-  const need=capW()-G.water; if(need<=0) return toast('물통이 이미 가득 찼습니다');
-  G.water=capW(); w.used=true; tick();
-  addLog('fx',`💧 「${w.name}」에서 물을 길어 가득 채웠습니다 (+${need}, 1걸음)`);
-  save(); render();
+function fillWaterSrc(viaStory){
+  const w=G.waterSrc; if(busy||!w||w.used) return false;
+  const townish=!isWild();
+  if(townish&&G.cityWaterDay===G.day) return toast('오늘은 이미 공용 우물에서 물을 채웠습니다'), false;
+  const need=capW()-G.water; if(need<=0) return toast('물통이 이미 가득 찼습니다'), false;
+  G.water=capW(); w.used=true; if(townish) G.cityWaterDay=G.day;
+  if(viaStory!==true) tick();
+  addLog('fx',`💧 「${w.name}」에서 물을 길어 가득 채웠습니다 (+${need}${viaStory===true?'':', 1걸음'})`);
+  if(viaStory!==true){ save(); render() }
+  return true;
+}
+/* "물을 긷는다" 같은 글·선택지로 수원에서 물을 채우려 하면 실제로 물통을 채움 (수원이 지금 곁에 있을 때만) */
+function waterFillIntent(t){
+  if(!G||!G.waterSrc||G.waterSrc.used||RX.NEG.test(String(t))) return false;
+  if(!/물을?\s*(긷|길어|퍼\s*올|채운|채워|담)/.test(String(t))) return false;
+  const ok=fillWaterSrc(true);
+  if(ok) pend(' [물 채움 처리 완료] 코드가 이미 플레이어의 물통을 가득 채웠다. 물 긷는 장면만 짧게 서술하고 effects의 water·hp는 0.',{zeroSupply:true});
+  return ok;
 }
 /* 자리를 떠나면 사라지는 것들 (화면 그리기 전에 정리) */
 function clearStaleEvents(){
   const c=G.caravan;
   if(c&&c.here){ const L=c.loc||'road'; if(!(G.loc===L||(L==='road'&&G.loc==='camp'))||(L==='dungeon'&&G.dungeon&&c.room&&c.room!==G.dungeon.cur)) c.here=false }
   const w=G.waterSrc;
-  if(w&&(w.used||w.loc!==G.loc||(w.room&&G.dungeon&&w.room!==G.dungeon.cur))) G.waterSrc=null;
+  if(w&&(w.used||w.loc!==G.loc||(w.room&&G.dungeon&&w.room!==G.dungeon.cur)||(w.dist&&w.dist!==G.district)||(w.town&&w.town!==G.town))) G.waterSrc=null;
 }
 
 /* =========================================================
@@ -5284,7 +5300,7 @@ function fixedHTML(){
   }
   for(const x of HOOKS.fixed){ try{ ac+=x.fn(L)||'' }catch(e){ console.warn('[fixed]',e) } }   // 기능 모듈이 덧붙이는 버튼
   // 사건으로 생긴 버튼
-  if(G.waterSrc&&!G.waterSrc.used) ac+=btn('fillWaterSrc()',`💧 「${esc(G.waterSrc.name)}」에서 물 채우기 (무료 · 1걸음)`,'','data-ws="1"');
+  if(G.waterSrc&&!G.waterSrc.used) ac+=btn('fillWaterSrc()',`💧 「${esc(G.waterSrc.name)}」에서 물 채우기 (무료 · ${isWild()?'1걸음':'하루 한 번'})`,'','data-ws="1"');
   if(L!=='road'&&caravanHere()) ac+=btn('openCaravan()',`🐫 ${esc(G.caravan.name)} (물·식량 🪙${PRICE_ROAD.water} · 횃불 🪙${PRICE_ROAD.torch})`,'','data-cv="1"');
   // 도시·거점에서만
   if(isTown()){
@@ -5831,7 +5847,7 @@ function openGuide(){
     ${row('특성 보너스','고대 문자 해독(글·비문 해독 +2) · 은빛 혀(매력 +2) · 전투 경험(싸움 +2) · 낙타와 친함(동물 +2) · 지독한 호기심(지혜 +1) · 밤눈(밤·어둠 생존술 +1, 횃불 없음 불이익 무시) · 진의 총애(하루 한 번 크게 실패하면 다시 굴림)')}
     ${row('불이익','유적에서 횃불 0: 매력 외 -2 · 체력 30% 이하: -1')}
     ${row('실패의 대가','매력 외 판정 실패: 체력 -(방 위험도, 최소 1) · 위험도 2 이상 방에서 부분 성공: 체력 -1')}
-    ${row('사건','이야기 속에서 상인이나 물이 있는 곳이 나오면 🐫 거래 · 💧 물 채우기 버튼이 생깁니다')}
+    ${row('사건','이야기 속에서 상인이나 물이 있는 곳이 나오면 🐫 거래 · 💧 물 채우기 버튼이 생깁니다. 도시·마을의 공용 우물은 하루 한 번 무료이고, "물을 긷는다" 같은 선택지·글로도 채워집니다')}
     ${h3('시간과 걸음')}
     ${row('1걸음','방(구역) 이동·사막 길 이동·시장 산책·인물 방문·유민과의 대화·찻집·이야기 행동. 유적과 야영지 안의 살펴보기·조사·이야기 선택지는 2번에 1걸음. 카스르 안 이야기 선택지·직접 입력은 세지 않음. 도시·거점에서 센 걸음은 시간만 흐르게 하고 물·식량은 줄지 않습니다')}
     ${row('낮 ↔ 밤',`${MOVE_STEPS.half}걸음마다 바뀜. 여관·거점에서 쉬거나 야영에서 아침을 맞으면 낮이 처음부터 다시 시작`)}

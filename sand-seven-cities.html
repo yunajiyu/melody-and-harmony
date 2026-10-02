@@ -2952,6 +2952,16 @@ function fillWaterSrc(viaStory){
 function waterFillIntent(t){
   t=String(t||'');
   if(!G||RX.NEG.test(t)||!/물을?\s*(?:가득\s*|듬뿍\s*|한\s*가득\s*)?(긷|길어|퍼\s*올|채운|채워|담)/.test(t)) return false;
+  /* 거점 우물(하루 3~6회)·와하 샘터(하루 1번)는 시설이 정한 무료 규칙을 그대로 따름 — 우물이라는 말이 없어도 (거점에서 "물을 채운다") */
+  if(!BUY_VERB.test(t)&&((G.loc==='home'&&has('well'))||(G.loc==='town'&&curTown().spring))){
+    const home=G.loc==='home', refuse=m=>{ toast(m); pend(` [물 채움 불가] ${m} effects의 water·food·gold·hp는 0.`,{zeroSupply:true,noMoney:true}); return true };
+    if(home?wellLeft()<=0:G.townSpringDay===G.day) return refuse(home?`오늘은 우물을 ${wellMax()}번 다 썼습니다.`:'오늘은 이미 샘터에서 물을 채웠습니다.');
+    const need=capW()-G.water; if(need<=0) return refuse('물통이 이미 가득 차 있습니다.');
+    G.water=capW(); if(home) G.home.wellN=(G.home.wellN||0)+1; else G.townSpringDay=G.day;
+    addLog('fx',home?`💧 우물에서 물을 길어 가득 채웠습니다 (+${need}, 무료 · 오늘 ${wellLeft()}회 남음)`:`💧 와하의 샘터에서 물을 가득 채웠습니다 (+${need}, 무료)`);
+    pend(' [물 채움 처리 완료] 코드가 이미 플레이어의 물통을 가득 채웠다(무료). 물 긷는 장면만 짧게 서술하고 effects의 water·gold·hp는 0.',{zeroSupply:true,noMoney:true});
+    return true;
+  }
   clearStaleEvents();   // 다른 곳으로 옮긴 뒤 남은 낡은 수원은 먼저 지움
   const townish=G.loc==='city'||G.loc==='town';
   // AI가 수원 사건을 내지 않았어도, 도시·마을에서 우물·샘에서 물을 채운다는 글이면 공용 우물로 처리 (산다·구입이 들어가면 구매)

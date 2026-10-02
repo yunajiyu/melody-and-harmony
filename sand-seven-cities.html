@@ -279,9 +279,11 @@ label{display:block;font-weight:500;margin:12px 0 4px}
 
 .dc-scene{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;background:linear-gradient(#f3dfb0,#d9b673);border:1px solid var(--line,#ccc);user-select:none;touch-action:none}
 .dc-base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dc-base,.dc-it img{image-rendering:pixelated}
 .dc-note{position:absolute;left:8px;top:6px;font-size:12px;opacity:.7}
 .dc-it{position:absolute;transform:translate(-50%,-50%)}
 .dc-it.mv{cursor:grab;touch-action:none}
+.dc-it.sel{outline:2px dashed #e0402f;outline-offset:2px}
 .dc-it img{width:100%;display:block;pointer-events:none;-webkit-user-drag:none}
 .dc-fb{display:flex;align-items:center;justify-content:center;aspect-ratio:1;font-size:clamp(18px,4vw,34px);pointer-events:none}
 </style>
@@ -5044,7 +5046,7 @@ function fixedHTML(){
   }else if(L==='home'){
     mvLbl='🧭 이동';
     mv=btn('enterCity(false)','↩ 카스르 시장으로')+btn('startExpedition()','🐪 유적 원정 떠나기','primary');
-    ac=btn('openBuild()','🔨 시설 짓기')+btn('openDecor()','🏡 거점 꾸미기')+btn('homeRest()','🛏 거점에서 쉬기')+btn('openRel()','👥 인연')
+    ac=btn('openBuild()','🔨 시설 짓기')+btn('openDecor(true)','🏡 거점 꾸미기')+btn('homeRest()','🛏 거점에서 쉬기')+btn('openRel()','👥 인연')
       +(has('well')?btn('wellFill()',wellLabel()):'')+(has('store')?btn('openStore()','📦 저장고'):'')
       +(has('workshop')?btn('appraise()','🏺 유물 감정'):'')+(has('study')?btn('studyMap()','🌌 별지도 연구'):'')
       +(G.comp.met&&(G.comp.joined||has('guest'))?btn('talkYumin()',yuminFindLabel()):'');
@@ -5754,16 +5756,24 @@ function decorHave(d){ if(d.from==='relic'){ relicSync(); return (G.relicG[d.g]|
 function decorImgHTML(file,ic,ext){
   return `<img src="${HOME_IMG}${file}.${ext||'png'}" alt="" onerror="this.outerHTML='<span class=&quot;dc-fb&quot;>${ic}</span>'">`;
 }
+let _dcEdit=false, _dcSel=null, _dcStage=null;
+/* 시설 자리: 기본값(FAC_SLOTS) 위에 편집 모드에서 저장한 값(SET.facSlots)을 덮어씀 */
+function facSlot(id){ return Object.assign({},FAC_SLOTS[id],(SET.facSlots||{})[id]) }
 function decorSceneHTML(movable){
-  const st=decorSt(), n=homeStage();
+  const st=decorSt(), n=(_dcEdit&&_dcStage)||homeStage();
   let h=`<img class="dc-base" src="${HOME_IMG}house_${n}.webp" alt="" onerror="this.remove()"><span class="dc-note">집 ${n}단계</span>`;
-  Object.entries(FAC_SLOTS).forEach(([id,o])=>{
+  Object.keys(FAC_SLOTS).forEach(id=>{
+    const o=facSlot(id), nm=esc((FAC.find(f=>f.id===id)||{}).n||'');
+    if(_dcEdit){
+      h+=`<div class="dc-it mv ${_dcSel===id?'sel':''}" data-f="${id}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;z-index:${Math.round(o.y*10)};opacity:${has(id)?1:.55}" title="${nm}" onpointerdown="facDown(event,'${id}')">${decorImgHTML(o.img,o.ic)}</div>`;
+      return;
+    }
     if(!has(id)||(o.rep===undefined&&has(id+'2'))) return;
-    h+=`<div class="dc-it" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;z-index:${Math.round(o.y*10)}" title="${esc((FAC.find(f=>f.id===id)||{}).n||'')}">${decorImgHTML(o.img,o.ic)}</div>`;
+    h+=`<div class="dc-it" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;z-index:${Math.round(o.y*10)}" title="${nm}">${decorImgHTML(o.img,o.ic)}</div>`;
   });
   DECOR.forEach(d=>{
     const pl=st.placed[d.id]; if(!pl||!decorHave(d)) return;
-    h+=`<div class="dc-it ${movable?'mv':''}" style="left:${pl.x}%;top:${pl.y}%;width:${d.w}%;z-index:${Math.round(pl.y*10)}" title="${esc(d.n)}" ${movable?`onpointerdown="decorDown(event,'${d.id}')"`:''}>${decorImgHTML(d.id,d.ic)}</div>`;
+    h+=`<div class="dc-it ${movable&&!_dcEdit?'mv':''}" style="left:${pl.x}%;top:${pl.y}%;width:${d.w}%;z-index:${Math.round(pl.y*10)}" title="${esc(d.n)}" ${movable&&!_dcEdit?`onpointerdown="decorDown(event,'${d.id}')"`:''}>${decorImgHTML(d.id,d.ic)}</div>`;
   });
   return h;
 }
@@ -5782,12 +5792,55 @@ function decorMove(ev){
 }
 function decorUp(){
   if(!_dd) return; const d=_dd; _dd=null;
+  if(d.fac){
+    if(d.x!=null){ const o=facSlot(d.id); SET.facSlots=SET.facSlots||{}; SET.facSlots[d.id]={x:Math.round(d.x*10)/10,y:Math.round(d.y*10)/10,w:o.w}; saveSettings() }
+    updateFacInfo(); return;
+  }
   if(d.x!=null){ decorSt().placed[d.id]={x:Math.round(d.x*10)/10,y:Math.round(d.y*10)/10}; save() }
 }
 function decorPlace(id){ const st=decorSt(), n=Object.keys(st.placed).length; st.placed[id]={x:30+(n*13)%45,y:68+(n*7)%22}; save(); openDecor() }   // 겹치지 않게 조금씩 어긋난 자리에 놓임
 function decorRemove(id){ delete decorSt().placed[id]; save(); openDecor() }
-function openDecor(){
+/* ---- 시설 위치 편집 모드: 시설을 끌어 옮기고 크기를 바꾼 뒤, 좌표 문구를 복사해 코드(FAC_SLOTS)에 반영 ---- */
+function facDown(ev,id){
+  const sc=document.getElementById('dcScene'); if(!sc) return;
+  ev.preventDefault(); const el=ev.currentTarget; try{ el.setPointerCapture(ev.pointerId) }catch(e){}
+  _dcSel=id; sc.querySelectorAll('.dc-it.sel').forEach(e=>e.classList.remove('sel')); el.classList.add('sel');
+  _dd={id,el,sc,x:null,y:null,fac:true};
+  el.onpointermove=decorMove; el.onpointerup=decorUp; el.onpointercancel=decorUp;
+  updateFacInfo();
+}
+function facText(){
+  return Object.keys(FAC_SLOTS).map(id=>{ const o=facSlot(id); return `${id}:{x:${o.x},y:${o.y},w:${o.w}}` }).join('\n');
+}
+function updateFacInfo(){
+  const n=document.getElementById('dcSelName'), w=document.getElementById('dcSelW'), out=document.getElementById('dcOut');
+  if(n) n.textContent=_dcSel?((FAC.find(f=>f.id===_dcSel)||{}).n||_dcSel):'(시설을 눌러 선택)';
+  if(w) w.textContent=_dcSel?facSlot(_dcSel).w:'-';
+  if(out) out.value=facText();
+}
+function facResize(d){
+  if(!_dcSel) return;
+  const o=facSlot(_dcSel); SET.facSlots=SET.facSlots||{};
+  SET.facSlots[_dcSel]={x:o.x,y:o.y,w:clamp(Math.round((o.w+d)*10)/10,3,70)}; saveSettings();
+  const el=document.querySelector(`#dcScene .dc-it[data-f="${_dcSel}"]`); if(el) el.style.width=SET.facSlots[_dcSel].w+'%';
+  updateFacInfo();
+}
+async function facReset(all){
+  if(all){ if(!(await askConfirm('모든 시설 위치를 기본값으로 되돌릴까요?'))) return; SET.facSlots={} }
+  else if(_dcSel&&SET.facSlots) delete SET.facSlots[_dcSel];
+  saveSettings(); openDecor();
+}
+function facCopy(){
+  const out=document.getElementById('dcOut'); if(!out) return;
+  out.select();
+  try{ navigator.clipboard.writeText(out.value).then(()=>toast('좌표를 복사했습니다'),()=>{ document.execCommand('copy'); toast('좌표를 복사했습니다') }) }
+  catch(e){ try{ document.execCommand('copy'); toast('좌표를 복사했습니다') }catch(_){ toast('글상자를 눌러 직접 복사하세요') } }
+}
+function toggleDcEdit(){ _dcEdit=!_dcEdit; _dcSel=null; _dcStage=null; openDecor() }
+function setDcStage(n){ _dcStage=n; openDecor() }
+function openDecor(reset){
   if(!G||!G.home) return;
+  if(reset){ _dcEdit=false; _dcSel=null; _dcStage=null }
   const st=decorSt();
   const src=d=>d.from==='market'?'카스르 시장':d.from==='relic'?'유적에서 얻은 유물':(TOWNS[d.from]||{}).n||'';
   const have=DECOR.filter(decorHave);
@@ -5795,9 +5848,19 @@ function openDecor(){
     const on=!!st.placed[d.id];
     return `<div class="shop-row" style="align-items:center"><span>${d.ic} ${esc(d.n)} <span class="muted" style="font-size:12px">${esc(src(d))}</span></span>${on?`<button class="small" onclick="decorRemove('${d.id}')">치우기</button>`:`<button class="small primary" onclick="decorPlace('${d.id}')">놓기</button>`}</div>`;
   }).join('')||'<p class="muted">아직 가구나 장식이 없습니다. 카스르 시장에서 가구를, 마을 상점에서 그 마을의 특산 장식을 살 수 있고, 유적에서 유물을 얻으면 진열대를 놓을 수 있습니다.</p>';
+  const cur=_dcStage||homeStage();
+  const edit=_dcEdit?`<div class="lex" style="margin-top:10px"><div class="h"><b>🛠 시설 위치 편집</b></div>
+      <p class="muted" style="font-size:12px;margin:4px 0">모든 시설이 표시됩니다(안 지은 시설은 흐리게). 끌어서 옮기고, 선택한 시설의 크기를 −/+로 바꾸세요. 집 단계를 바꿔 가며 맞는지 확인할 수 있고, 값은 이 브라우저에 저장됩니다. 마음에 들면 아래 좌표를 복사해 개발자(Claude)에게 보내 주세요.</p>
+      <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">집 단계 ${[1,2,3,4].map(n=>`<button class="small ${n===cur?'primary':''}" onclick="setDcStage(${n})">${n}</button>`).join('')}</div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">선택: <b id="dcSelName"></b> · 폭 <b id="dcSelW"></b>% <button class="small" onclick="facResize(-1)">−</button><button class="small" onclick="facResize(1)">+</button><button class="small" onclick="facResize(-0.2)">−0.2</button><button class="small" onclick="facResize(0.2)">+0.2</button><button class="small" onclick="facReset(false)">선택 초기화</button><button class="small" onclick="facReset(true)">전체 초기화</button></div>
+      <textarea id="dcOut" rows="9" readonly style="width:100%;margin-top:6px;font-family:monospace;font-size:12px"></textarea>
+      <div class="row" style="margin-top:6px"><button class="small primary" onclick="facCopy()">📋 좌표 복사</button></div></div>`:'';
   modal('🏡 거점 꾸미기',`<p class="muted" style="font-size:13px">놓은 가구와 장식은 끌어서 옮길 수 있습니다. 시설은 지으면 정해진 자리에 나타납니다. 가구·장식은 외형만 바뀌며 효과는 없습니다.${has('land')?'':' '+DECOR_MARKET_NOTE+'.'}</p>
+    <div class="row" style="justify-content:flex-end;margin-bottom:6px"><button class="small ${_dcEdit?'primary':''}" onclick="toggleDcEdit()">🛠 시설 위치 편집 ${_dcEdit?'끝내기':''}</button></div>
     <div class="dc-scene" id="dcScene">${decorSceneHTML(true)}</div>
-    <h4 style="margin:14px 0 4px">가지고 있는 것</h4>${rows}`);
+    ${edit}
+    ${_dcEdit?'':`<h4 style="margin:14px 0 4px">가지고 있는 것</h4>${rows}`}`);
+  if(_dcEdit) updateFacInfo();
 }
 /* 상점에 끼워 넣는 구역: 카스르 시장 = 기본 가구, 마을 = 그 마을 특산 */
 function decorShopHTML(){

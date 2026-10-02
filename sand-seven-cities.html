@@ -1278,6 +1278,15 @@ const IX={
   SLEEP_NEG:/(않|못|말고|안\s*잔|안\s*쉰|아니)/,
   WAIT:/(하루|이틀|사흘|며칠|(\d+)\s*일)\s*(을|를|동안|간|만)?\s*(기다린|머무른|머문|머물|보낸|지낸|버틴|쉰다|묵는다|지새)/,
 };
+/* 카스르 안에서 다섯 장소(시장·찻집·여관·성문·오아시스) 중 한 곳으로 '간다'는 문장이면 그 장소 키, 아니면 null.
+   장소 이름 바로 뒤에 이동 동사가 올 때만 (예: "시장에서 찻집으로 간다" → teahouse) */
+function districtMove(t){
+  if(!G||G.loc!=='city') return null;
+  t=String(t||'');
+  if(/(에서\s*(쉰|묵|잔|마신|듣|산다|거닌))/.test(t)) return null;
+  const hit=IX.DIST_KEYS.find(([k,re])=>re.test(t)&&new RegExp(re.source+'[가-힣\\s]{0,6}'+IX.DIST_VERB.source).test(t));
+  return hit?hit[0]:null;
+}
 const waitDays=t=>{ const m=String(t).match(/(\d+)\s*일/); if(m) return Math.min(3,Math.max(1,+m[1])); if(/사흘/.test(t)) return 3; if(/이틀|며칠/.test(t)) return 2; return 1 };
 const inRuin=()=>!!G.dungeon&&['dungeon','camp','road'].includes(G.loc);
 const itemIn=t=>G.items.findIndex(it=>it&&String(it).length>=2&&t.includes(it));
@@ -1294,8 +1303,8 @@ const INTENTS=[
   {id:'caravan',
    when:t=>G.caravan&&G.caravan.here&&G.loc===(G.caravan.loc||'road')&&IX.CARAVAN_BUY.test(t), run:()=>{ openCaravan() }},
   {id:'district',
-   when:t=>G.loc==='city'&&!/(에서\s*(쉰|묵|잔|마신|듣|산다|거닌))/.test(t)&&IX.DIST_KEYS.some(([k,re])=>re.test(t)&&new RegExp(re.source+'[가-힣\\s]{0,6}'+IX.DIST_VERB.source).test(t)),
-   run:t=>{ const k=IX.DIST_KEYS.find(([k,re])=>re.test(t))[0]; addLog('action',t); if(curDistrict()===k) toast(`이미 ${DISTRICTS[k].n}에 있습니다`); else goDistrict(k) }},
+   when:t=>!!districtMove(t),
+   run:t=>{ const k=districtMove(t); addLog('action',t); if(curDistrict()===k) toast(`이미 ${DISTRICTS[k].n}에 있습니다`); else goDistrict(k) }},
   {id:'home',confirm:true,label:()=>'🏠 거점으로 이동',
    when:t=>IX.HOME.test(t),
    run:t=>{
@@ -1357,6 +1366,10 @@ function pickChoice(i){
   if(m){
     if(m.type==='check') return doCheck(c,m.skill,m.dc,'choice');
     if(m.type!=='story'&&runChoiceType(m.type,c)) return;
+    if(m.type==='story'&&G.loc==='city'&&!RX.NEG.test(c)){   // 선택지 글이 다른 장소로 가는 것이면 실제 장소도 옮김
+      const k=districtMove(c);
+      if(k&&k!==curDistrict()) goDistrict(k);
+    }
     return story(c,{src:'choice'});
   }
   act(c,{src:'choice'});
@@ -1857,7 +1870,7 @@ function cityFixedHTML(){
   }
   return {mv:bar,mvLbl:`📍 ${DISTRICTS[d].n} · 장소 이동`,ac:a,acLbl:'🧭 행동'};
 }
-on('context',90,()=>G.loc==='city'?` 지금 있는 곳은 카스르의 「${DISTRICTS[curDistrict()].n}」이다. 장면의 배경과 등장인물을 이 장소에 맞출 것(성문: 대상·경비병·낙타꾼, 찻집: 소문·손님, 여관: 투숙객·여관 주인, 시장: 상인·행인, 오아시스: 우물·그늘·나그네).`:'');
+on('context',90,()=>G.loc==='city'?` 지금 있는 곳은 카스르의 「${DISTRICTS[curDistrict()].n}」이다. 장면의 배경과 등장인물을 이 장소에 맞출 것(성문: 대상·경비병·낙타꾼, 찻집: 소문·손님, 여관: 투숙객·여관 주인, 시장: 상인·행인, 오아시스: 우물·그늘·나그네). 카스르 안의 장소는 시장 거리·찻집·여관·성문·오아시스 가장자리 다섯뿐이다. 이 다섯 밖의 곳(사원, 골목 깊숙한 곳, 개인 집 등)으로 가겠다고 하면 이동한 것으로 서술하지 말고, 지금 장소 안의 풍경·인물로 처리하거나 다섯 장소 중 가까운 곳으로 안내하라. 장소를 옮기는 선택지는 다섯 장소 중 하나로 가는 것만 만들 것.`:'');
 function cityRumor(){
   if(busy) return;
   G._yuminHere=false;
